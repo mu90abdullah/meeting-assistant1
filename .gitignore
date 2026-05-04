@@ -1,0 +1,43 @@
+# ── Python ────────────────────────────────────────
+output/
+logs/
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Audio / Media (large files) ───────────────────
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.mp4
+*.ogg
+_chunks_*/
+
+# ── Frontend (Next.js) ────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env*
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# ── OS / Editor ───────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Temp files ────────────────────────────────────
+*.log
+New Text Document*.txt

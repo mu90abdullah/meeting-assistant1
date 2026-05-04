@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ملخص الاجتماع – {{ analysis.meeting_title }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f5f5f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: #111;
+    direction: rtl;
+    text-align: right;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrapper {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    overflow: hidden;
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 36px 40px 28px;
+    border-bottom: 1px solid #f0f0f0;
+    direction: rtl;
+    text-align: right;
+  }
+  .brand {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #888;
+    margin-bottom: 18px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .header .date {
+    font-size: 13px;
+    color: #888;
+  }
+
+  /* ── Body ── */
+  .body {
+    padding: 32px 40px;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .section { margin-bottom: 28px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 10px;
+    text-align: right;
+  }
+
+  /* ── Summary ── */
+  .summary-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #333;
+    text-align: right;
+    direction: rtl;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    margin: 28px 0;
+  }
+
+  /* ── Topics ── */
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+    direction: rtl;
+  }
+  .topic-pill {
+    background: #f5f5f5;
+    color: #444;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 13px;
+    border-radius: 100px;
+    border: 1px solid #e5e5e5;
+  }
+
+  /* ── Action Items ── */
+  .action-list { list-style: none; direction: rtl; }
+  .action-item {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f5f5f5;
+    direction: rtl;
+  }
+  .action-item:last-child { border-bottom: none; }
+  .action-num {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #aaa;
+    min-width: 18px;
+    text-align: center;
+    margin-top: 2px;
+  }
+  .action-content { flex: 1; text-align: right; }
+  .action-task { font-size: 14px; color: #111; font-weight: 500; line-height: 1.5; text-align: right; }
+  .action-meta { font-size: 12px; color: #aaa; margin-top: 3px; text-align: right; }
+
+  /* Priority dot */
+  .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .dot-high   { background: #ef4444; }
+  .dot-medium { background: #f59e0b; }
+  .dot-low    { background: #22c55e; }
+
+  /* ── Decisions ── */
+  .decision-item {
+    padding: 14px 16px;
+    background: #fafafa;
+    border-radius: 6px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 8px;
+    direction: rtl;
+    text-align: right;
+  }
+  .decision-item:last-child { margin-bottom: 0; }
+  .decision-text { font-size: 14px; color: #111; font-weight: 500; line-height: 1.5; text-align: right; }
+  .decision-by { font-size: 12px; color: #999; margin-top: 5px; text-align: right; }
+
+  /* ── Next Meeting ── */
+  .next-meeting {
+    background: #111;
+    border-radius: 8px;
+    padding: 18px 22px;
+    color: #fff;
+    direction: rtl;
+    text-align: right;
+  }
+  .next-label { font-size: 11px; color: #888; letter-spacing: 1px; margin-bottom: 6px; text-align: right; }
+  .next-date  { font-size: 16px; font-weight: 600; text-align: right; }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 20px 40px;
+    border-top: 1px solid #f0f0f0;
+    text-align: center;
+    font-size: 12px;
+    color: #bbb;
+    line-height: 1.6;
+    direction: rtl;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper" dir="rtl" style="direction:rtl;text-align:right;">
+
+  <!-- Header -->
+  <div class="header" dir="rtl" style="direction:rtl;text-align:right;">
+    <h1 style="direction:rtl;text-align:right;">{{ analysis.meeting_title }}</h1>
+    <div class="date" style="direction:rtl;text-align:right;">{{ generated_at }}</div>
+  </div>
+
+  <!-- Body -->
+  <div class="body" dir="rtl" style="direction:rtl;text-align:right;">
+
+    <!-- Summary -->
+    <div class="section" style="direction:rtl;text-align:right;">
+      <div class="section-label" style="direction:rtl;text-align:right;">الملخص</div>
+      <p class="summary-text" dir="rtl" style="direction:rtl;text-align:right;">{{ analysis.summary }}</p>
+    </div>
+
+    <!-- Key Topics -->
+    {% if analysis.key_topics %}
+    <hr class="divider"/>
+    <div class="section" style="direction:rtl;text-align:right;">
+      <div class="section-label" style="direction:rtl;text-align:right;">المواضيع</div>
+      <div class="topics" dir="rtl" style="direction:rtl;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;">
+        {% for topic in analysis.key_topics %}
+        <span class="topic-pill">{{ topic }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Items -->
+    {% if analysis.action_items %}
+    <hr class="divider"/>
+    <div class="section" style="direction:rtl;text-align:right;">
+      <div class="section-label" style="direction:rtl;text-align:right;">المهام ({{ analysis.action_items | length }})</div>
+      <ul class="action-list" dir="rtl" style="direction:rtl;list-style:none;padding:0;margin:0;">
+        {% for item in analysis.action_items %}
+        <li class="action-item" dir="rtl" style="direction:rtl;list-style:none;display:flex;flex-direction:row-reverse;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid #f5f5f5;">
+          <div class="action-num" style="flex-shrink:0;font-size:13px;font-weight:700;color:#aaa;min-width:18px;text-align:center;margin-top:2px;">{{ loop.index }}</div>
+          <div class="action-content" style="flex:1;text-align:right;direction:rtl;">
+            <div class="action-task" style="text-align:right;direction:rtl;">{{ item.task }}</div>
+            <div class="action-meta" style="font-size:12px;color:#aaa;margin-top:3px;text-align:right;">
+              {% if item.assignee %}{{ item.assignee }}{% endif %}
+              {% if item.deadline %} · {{ item.deadline }}{% endif %}
+              {% if item.priority %}
+                <span class="dot dot-{{ item.priority }}"></span>{{ item.priority }}
+              {% endif %}
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Decisions -->
+    {% if analysis.decisions %}
+    <hr class="divider"/>
+    <div class="section" style="direction:rtl;text-align:right;">
+      <div class="section-label" style="direction:rtl;text-align:right;">القرارات ({{ analysis.decisions | length }})</div>
+      {% for decision in analysis.decisions %}
+      <div class="decision-item" dir="rtl" style="direction:rtl;text-align:right;padding:14px 16px;background:#fafafa;border-radius:6px;border:1px solid #f0f0f0;margin-bottom:8px;">
+        <div class="decision-text" style="direction:rtl;text-align:right;">{{ decision.description }}</div>
+        {% if decision.made_by %}
+        <div class="decision-by" style="direction:rtl;text-align:right;">{{ decision.made_by }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Next Meeting -->
+    {% if analysis.next_meeting_date %}
+    <hr class="divider"/>
+    <div class="next-meeting" dir="rtl" style="direction:rtl;text-align:right;background:#111;border-radius:8px;padding:18px 22px;color:#fff;">
+      <div class="next-label" style="direction:rtl;text-align:right;font-size:11px;color:#888;margin-bottom:6px;">الاجتماع القادم</div>
+      <div class="next-date" style="direction:rtl;text-align:right;font-size:16px;font-weight:600;">📅 {{ analysis.next_meeting_date }}</div>
+    </div>
+    {% endif %}
+
+  </div><!-- /body -->
+
+
+
+</div><!-- /wrapper -->
+</body>
+</html>

@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+:root {
+  /* ── Background layers (light to dark) ── */
+  --bg-primary:      #fafafa; /* Page background - very light */
+  --bg-secondary:    #f3f4f6; /* Slightly darker for inner sub-elements */
+  --bg-tertiary:     #e5e7eb; /* Darkest layer */
+  --bg-card:         #ffffff; /* Outer main card - pure white */
+  --bg-card-hover:   #f9fafb;
+  --bg-input:        #ffffff; /* Input fields */
+
+  /* ── Borders ── */
+  --border-subtle:   rgba(0, 0, 0, 0.07);
+  --border-default:  rgba(0, 0, 0, 0.14);
+  --border-active:   #10a37f;
+
+  /* ── Accent Colors (ChatGPT Green) ── */
+  --accent-orange:        #10a37f;
+  --accent-orange-hover:  #0e906f;
+  --accent-orange-dim:    rgba(16, 163, 127, 0.1);
+  --accent-orange-border: rgba(16, 163, 127, 0.3);
+
+  --accent-sage:     #5e5e5e;
+  --accent-sage-dim: rgba(0, 0, 0, 0.04);
+  --accent-teal:     #10a37f;
+  --accent-teal-dim: rgba(16, 163, 127, 0.1);
+
+  --accent-green:    #10a37f;
+  --accent-red:      #ef4444;
+  --accent-amber:    #f59e0b;
+
+  /* ── Typography ── */
+  --text-primary:    #111827;
+  --text-secondary:  #374151;
+  --text-muted:      #6b7280;
+
+  /* ── Shadows ── */
+  --shadow-card:     0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-orange:   0 4px 14px rgba(16, 163, 127, 0.25);
+}
+
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Söhne, 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  direction: rtl;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ChatGPT minimal look - no grids or ambient glows */
+
+/* Flat card — ChatGPT style */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--border-default);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+/* Normal text, no gradient */
+.gradient-text {
+  color: var(--text-primary);
+}
+
+/* Primary CTA — ChatGPT Teal */
+.btn-gradient {
+  background: var(--accent-orange);
+  border: none;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(16, 163, 127, 0.15);
+}
+
+.btn-gradient:hover {
+  background: var(--accent-orange-hover);
+}
+
+.btn-gradient:active { transform: scale(0.98); }
+
+.btn-gradient:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar              { width: 8px; height: 8px; }
+::-webkit-scrollbar-track        { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb        { background: var(--border-default); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--text-muted); }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulseOrange {
+  0%, 100% { box-shadow: 0 0 16px rgba(249,115,22,0.2); }
+  50%       { box-shadow: 0 0 36px rgba(249,115,22,0.45); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.55s ease forwards; }
+.animate-fade-in    { animation: fadeIn 0.35s ease forwards; }
+.animate-pulse-glow { animation: pulseOrange 2.2s ease-in-out infinite; }
+.animate-spin-slow  { animation: spin-slow 2.5s linear infinite; }
+
+/* Progress bar */
+.progress-bar-fill {
+  background-image: linear-gradient(90deg, #F97316, #D4901A, #F97316);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Email tag */
+.tag {
+  background: var(--accent-orange-dim);
+  border: 1px solid var(--accent-orange-border);
+  color: var(--accent-orange);
+  border-radius: 8px;
+  padding: 3px 11px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background: rgba(249,115,22,0.22);
+  border-color: var(--accent-orange);
+}
+
+/* Mode toggle */
+.mode-option {
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Arabic text */
+.arabic-text {
+  direction: rtl;
+  text-align: right;
+  line-height: 1.85;
+}
+
+/* Drag active */
+.drag-active {
+  border-color: var(--accent-orange) !important;
+  background: rgba(249,115,22,0.06) !important;
+  animation: pulseOrange 1.5s ease-in-out infinite;
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.badge-done    { background: rgba(61,170,122,0.14);  color: var(--accent-green);  border: 1px solid rgba(61,170,122,0.28); }
+.badge-running { background: var(--accent-orange-dim); color: var(--accent-orange); border: 1px solid var(--accent-orange-border); }
+.badge-error   { background: rgba(224,82,82,0.13);   color: var(--accent-red);    border: 1px solid rgba(224,82,82,0.28); }
+.badge-queued  { background: rgba(212,144,26,0.13);  color: var(--accent-amber);  border: 1px solid rgba(212,144,26,0.28); }

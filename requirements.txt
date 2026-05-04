@@ -1,0 +1,17 @@
+# ── Core ──────────────────────────────────────────────────────────────────────
+openai>=1.30.0          # Whisper API + GPT-4o
+pydantic>=2.0.0         # Type-safe data models
+python-dotenv>=1.0.0    # .env file loading
+jinja2>=3.1.0           # HTML email templating
+tenacity>=8.2.0         # Retry logic with exponential backoff
+rich>=13.0.0            # Beautiful terminal output and logging
+
+# ── Local Whisper (optional — only needed if WHISPER_MODE=local) ──────────────
+# openai-whisper>=20231117
+
+# ── Large-file chunking (optional — only needed for files > 25 MB) ────────────
+# pydub>=0.25.1
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=7.4.0
+pytest-mock>=3.12.0

@@ -1,0 +1,41 @@
+Sprint Review Meeting — Engineering Team
+Date: April 26, 2026
+Attendees: Alice (Engineering Lead), Bob (Backend), Carol (Frontend), David (QA), Eve (Product Manager)
+
+---
+
+Eve: Good morning everyone. Let's kick off the sprint review for Sprint 14. We had a packed two weeks, so I want to make sure we cover everything. Alice, do you want to start with the backend summary?
+
+Alice: Sure. Bob, why don't you walk us through what the backend team shipped?
+
+Bob: Absolutely. We completed the user authentication refactor — moved from JWT to OAuth 2.0 with refresh token rotation. That's been a long-standing item. We also deployed the new notification microservice to staging. It's fully decoupled from the monolith now and handling about 50,000 events per minute in our load tests.
+
+Eve: That's fantastic. Any blockers remaining?
+
+Bob: One item — the notification service still needs the rate-limiting middleware integrated. I'd estimate two days of work. I can have that done by this Thursday.
+
+Alice: Perfect. Bob, let's make that a high-priority item for the start of next sprint. Can you also write the integration tests for the OAuth flow before Friday? We need those before we push to production.
+
+Bob: Confirmed, I'll have both done by Friday.
+
+Carol: On the frontend side, we shipped the new dashboard redesign. All components are now responsive down to 320px. We also integrated the new design system tokens — that touched about 40 files. The dark mode toggle is live in staging.
+
+Eve: The dark mode looks great by the way. Users have been asking for that for over a year.
+
+David: From QA, we ran a full regression on the dashboard this week. Found three bugs — two are already fixed by Carol, and the third one, the chart tooltip z-index issue, is still open. Carol, can you take a look at that one?
+
+Carol: Yes, I'll fix that today. It's a CSS stacking context issue, should be a quick fix.
+
+David: Good. Also, we decided to delay the mobile app release from May 1st to May 15th. After this week's QA pass, we found that the offline sync feature isn't stable enough for production. The whole team agreed this was the right call.
+
+Eve: Agreed. Quality over speed. Alice, can you update the release schedule in Confluence and notify the stakeholders by EOD today?
+
+Alice: I'll send the update by 5pm.
+
+Eve: One more thing — we've decided to adopt Playwright for all new end-to-end tests going forward, replacing Cypress. David drove that evaluation and the results were clear. David, please document the migration guide and share it with the team by next Wednesday.
+
+David: Will do. I'll also set up the Playwright project scaffold so everyone can start using it immediately.
+
+Eve: Perfect. Our next sprint planning meeting is scheduled for Monday, April 28th at 10am. Please come with your story estimates ready. That's everything for today — great work team, this was a strong sprint. Thanks everyone.
+
+Alice: Thanks all!
