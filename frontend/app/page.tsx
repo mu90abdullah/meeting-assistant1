@@ -8,7 +8,7 @@ import ModeToggle from './components/ModeToggle';
 import ProgressBar from './components/ProgressBar';
 import ResultsViewer from './components/ResultsViewer';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = '';
 const POLL_INTERVAL_MS = 1500;
 
 type JobStatus = 'idle' | 'queued' | 'running' | 'done' | 'error';
