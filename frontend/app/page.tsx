@@ -8,7 +8,7 @@ import ModeToggle from './components/ModeToggle';
 import ProgressBar from './components/ProgressBar';
 import ResultsViewer from './components/ResultsViewer';
 
-const API_BASE = '';
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 const POLL_INTERVAL_MS = 1500;
 
 type JobStatus = 'idle' | 'queued' | 'running' | 'done' | 'error';
