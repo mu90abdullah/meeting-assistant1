@@ -52,7 +52,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        # Production: set FRONTEND_URL env var to your Vercel URL
+        # e.g. https://meeting-assistant-xyz.vercel.app
+        *([os.environ["FRONTEND_URL"]] if os.environ.get("FRONTEND_URL") else []),
+        # Allow all vercel.app subdomains as fallback
+        "https://*.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

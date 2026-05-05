@@ -1,0 +1,17 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[env]
+# يمكنك ترك المتغيرات السرية للوحة تحكم Railway 
+# لكن نضع هنا المتغيرات العامة لضمان عمل التطبيق بشكل صحيح
+OUTPUT_DIR = "/tmp/output"
+WHISPER_MODE = "groq"
+WHISPER_LANGUAGE = "ar"
+LLM_PROVIDER = "groq"
+LOG_LEVEL = "INFO"
