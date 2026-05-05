@@ -56,8 +56,14 @@ export default function Home() {
     stopPolling();
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/status/${jobId}`);
-        if (!res.ok) return;
+        const res = await fetch(`${API_BASE}/api/status/${jobId}?t=${Date.now()}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            setJob(prev => prev ? { ...prev, status: 'error', error: 'فُقدت المهمة (ربما أعيد تشغيل الخادم). يرجى المحاولة مرة أخرى.' } : null);
+            stopPolling();
+          }
+          return;
+        }
         const data = await res.json();
 
         setJob(prev => prev ? {
