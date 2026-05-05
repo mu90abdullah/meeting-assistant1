@@ -309,7 +309,7 @@ export default function Home() {
           <ProgressBar
             progress={job.progress}
             stage={job.stage}
-            status={job.status === 'idle' ? 'queued' : job.status}
+            status={job.status}
           />
 
           {/* Error details */}

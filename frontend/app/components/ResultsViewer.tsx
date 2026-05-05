@@ -132,7 +132,7 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              padding: '9px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              padding: '9px 18px', borderRadius: '8px', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: '13px', fontWeight: 500, whiteSpace: 'nowrap',
               display: 'flex', alignItems: 'center', gap: '6px',
               transition: 'all 0.15s ease',
