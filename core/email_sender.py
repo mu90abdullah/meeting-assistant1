@@ -116,10 +116,10 @@ class EmailSender:
         # Validate SMTP credentials before attempting connection
         s.validate_smtp()
         if s.smtp_port == 465:
-            logger.debug("Connecting to SMTP_SSL %s:%d …", s.smtp_host, s.smtp_port)
+            logger.info("Connecting to SMTP_SSL %s:%d …", s.smtp_host, s.smtp_port)
             server = smtplib.SMTP_SSL(s.smtp_host, s.smtp_port, timeout=30)
         else:
-            logger.debug("Connecting to SMTP %s:%d …", s.smtp_host, s.smtp_port)
+            logger.info("Connecting to SMTP %s:%d …", s.smtp_host, s.smtp_port)
             server = smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=30)
             server.ehlo()
 
