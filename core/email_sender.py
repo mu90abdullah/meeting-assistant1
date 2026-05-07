@@ -87,6 +87,17 @@ class EmailSender:
                 subject=subject,
             )
 
+        # ── Resend HTTP API Route ──
+        if getattr(self._settings, "resend_api_key", ""):
+            return self._send_via_resend(
+                recipients=recipients,
+                subject=subject,
+                html_body=html_body,
+                plain_body=plain_body,
+                attachments=attachments,
+            )
+
+        # ── Standard SMTP Route ──
         results: List[RecipientResult] = []
         with self._smtp_connection() as server:
             for recipient in recipients:
@@ -117,12 +128,17 @@ class EmailSender:
         s.validate_smtp()
         logger.debug("Connecting to SMTP %s:%d …", s.smtp_host, s.smtp_port)
 
-        server = smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=30)
-        server.ehlo()
-
-        if s.smtp_use_tls:
-            server.starttls()
+        if s.smtp_port == 465:
+            # Port 465 requires implicit SSL/TLS from the start
+            server = smtplib.SMTP_SSL(s.smtp_host, s.smtp_port, timeout=30)
             server.ehlo()
+        else:
+            # Ports like 587 use explicit TLS
+            server = smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=30)
+            server.ehlo()
+            if s.smtp_use_tls:
+                server.starttls()
+                server.ehlo()
 
         server.login(s.smtp_user, s.smtp_password)
         logger.debug("SMTP login successful.")
@@ -168,6 +184,79 @@ class EmailSender:
         except Exception as exc:
             logger.error("  ✗ Failed to send to %s: %s", recipient, exc)
             return RecipientResult(email=recipient, success=False, error=str(exc))
+
+    def _send_via_resend(
+        self,
+        recipients: List[str],
+        subject: str,
+        html_body: str,
+        plain_body: str,
+        attachments: Optional[List[Path]] = None,
+    ) -> EmailDeliveryResult:
+        """Send emails using the Resend HTTP API to bypass SMTP restrictions."""
+        import urllib.request
+        import urllib.error
+        import json
+        import base64
+
+        logger.info("Sending email via Resend API (HTTP)...")
+        url = "https://api.resend.com/emails"
+        
+        # Resend requires a verified domain or onboarding@resend.dev
+        from_email = self._settings.smtp_user if self._settings.smtp_user else "onboarding@resend.dev"
+        from_header = f"{self._settings.email_from_name} <{from_email}>"
+
+        attachment_list = []
+        if attachments:
+            for filepath in attachments:
+                if not filepath.exists():
+                    continue
+                with open(filepath, "rb") as f:
+                    content = base64.b64encode(f.read()).decode('utf-8')
+                    attachment_list.append({
+                        "filename": filepath.name,
+                        "content": content
+                    })
+
+        payload = {
+            "from": from_header,
+            "to": recipients,
+            "subject": subject,
+            "html": html_body,
+            "text": plain_body,
+        }
+        if attachment_list:
+            payload["attachments"] = attachment_list
+
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(url, data=data, method="POST")
+        req.add_header("Authorization", f"Bearer {self._settings.resend_api_key}")
+        req.add_header("Content-Type", "application/json")
+
+        results = []
+        try:
+            with urllib.request.urlopen(req) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                logger.info("  ✓ Sent via Resend successfully. ID: %s", res_data.get("id"))
+                for r in recipients:
+                    results.append(RecipientResult(email=r, success=True))
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode("utf-8")
+            logger.error("  ✗ Failed to send via Resend: HTTP %s - %s", e.code, error_body)
+            for r in recipients:
+                results.append(RecipientResult(email=r, success=False, error=error_body))
+        except Exception as e:
+            logger.error("  ✗ Failed to send via Resend: %s", e)
+            for r in recipients:
+                results.append(RecipientResult(email=r, success=False, error=str(e)))
+
+        delivery = EmailDeliveryResult(recipients=results, subject=subject)
+        logger.info(
+            "Resend delivery complete — %d sent, %d failed.",
+            delivery.total_sent,
+            delivery.total_failed,
+        )
+        return delivery
 
     # ── Template rendering ────────────────────────────────────────────────────
 

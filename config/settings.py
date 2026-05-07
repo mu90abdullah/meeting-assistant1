@@ -59,6 +59,9 @@ class Settings:
     smtp_password: str = field(default_factory=lambda: _optional("SMTP_PASSWORD", ""))
     smtp_use_tls: bool = field(default_factory=lambda: _optional("SMTP_USE_TLS", "true").lower() == "true")
     email_from_name: str = field(default_factory=lambda: _optional("EMAIL_FROM_NAME", "Meeting Assistant"))
+    
+    # ── Resend API (Alternative to SMTP) ──────────────────────────────────────
+    resend_api_key: str = field(default_factory=lambda: _optional("RESEND_API_KEY", ""))
 
     # ── Agent behaviour ────────────────────────────────────────────────────────
     max_retries: int = field(default_factory=lambda: int(_optional("MAX_RETRIES", "3")))
@@ -75,6 +78,10 @@ class Settings:
         Validate SMTP credentials. Call this only when email is about to be sent.
         Raises EnvironmentError with a helpful message if any field is missing.
         """
+        # If Resend API is configured, skip SMTP validation
+        if self.resend_api_key:
+            return
+
         missing = [
             key for key, val in [
                 ("SMTP_HOST", self.smtp_host),
@@ -85,7 +92,7 @@ class Settings:
         ]
         if missing:
             raise EnvironmentError(
-                f"[Config] Missing SMTP credentials: {', '.join(missing)}\n"
+                f"[Config] Missing Email configuration. Either set RESEND_API_KEY or SMTP credentials: {', '.join(missing)}\n"
                 f"  → Set these in your .env file to enable email delivery.\n"
                 f"  → Use --no-email or --dry-run to skip email."
             )
