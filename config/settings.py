@@ -30,8 +30,7 @@ def _require(key: str) -> str:
 
 
 def _optional(key: str, default: str = "") -> str:
-    value = os.getenv(key, default)
-    return value.strip() if value else default
+    return os.getenv(key, default).strip()
 
 
 @dataclass
@@ -76,19 +75,6 @@ class Settings:
         Validate SMTP credentials. Call this only when email is about to be sent.
         Raises EnvironmentError with a helpful message if any field is missing.
         """
-        import logging
-        logger = logging.getLogger(__name__)
-        
-        # Debug: Check environment keys presence (not values)
-        import os
-        all_env_keys = os.environ.keys()
-        smtp_keys = [k for k in all_env_keys if k.startswith("SMTP_")]
-        logger.info(f"[Config] ALL SMTP-related keys found in environment: {smtp_keys}")
-        
-        keys_to_check = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_USE_TLS"]
-        present_keys = [k for k in keys_to_check if os.getenv(k)]
-        logger.info(f"[Config] Expected SMTP keys that have values: {present_keys}")
-
         missing = [
             key for key, val in [
                 ("SMTP_HOST", self.smtp_host),
@@ -100,7 +86,8 @@ class Settings:
         if missing:
             raise EnvironmentError(
                 f"[Config] Missing SMTP credentials: {', '.join(missing)}\n"
-                f"  → Set these in your Railway Variables or .env file."
+                f"  → Set these in your .env file to enable email delivery.\n"
+                f"  → Use --no-email or --dry-run to skip email."
             )
 
     @classmethod
