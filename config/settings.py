@@ -80,9 +80,14 @@ class Settings:
         logger = logging.getLogger(__name__)
         
         # Debug: Check environment keys presence (not values)
+        import os
+        all_env_keys = os.environ.keys()
+        smtp_keys = [k for k in all_env_keys if k.startswith("SMTP_")]
+        logger.info(f"[Config] ALL SMTP-related keys found in environment: {smtp_keys}")
+        
         keys_to_check = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_USE_TLS"]
         present_keys = [k for k in keys_to_check if os.getenv(k)]
-        logger.info(f"[Config] Found SMTP keys in environment: {present_keys}")
+        logger.info(f"[Config] Expected SMTP keys that have values: {present_keys}")
 
         missing = [
             key for key, val in [
