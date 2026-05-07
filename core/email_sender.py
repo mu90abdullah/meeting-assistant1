@@ -232,6 +232,7 @@ class EmailSender:
         req = urllib.request.Request(url, data=data, method="POST")
         req.add_header("Authorization", f"Bearer {self._settings.resend_api_key}")
         req.add_header("Content-Type", "application/json")
+        req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
         results = []
         try:
