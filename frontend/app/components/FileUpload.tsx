@@ -49,30 +49,28 @@ export default function FileUpload({ onFile, file, disabled }: FileUploadProps) 
 
   return (
     <div>
-      <label style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500, marginBottom: '12px', display: 'block' }}>
-      </label>
+      <label className="form-label">الملف الصوتي</label>
       <div
         onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
         onDrop={handleDrop}
-        className={`glass-card ${dragActive ? 'drag-active' : ''}`}
         style={{
-          padding: '36px 24px',
+          padding: '40px 24px',
           textAlign: 'center',
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.55 : 1,
+          borderWidth: dragActive ? '2px' : '1px',
+          borderColor: dragActive ? '#e8e8e8' : file ? 'rgba(52, 199, 89, 0.5)' : 'rgba(255, 255, 255, 0.35)',
           borderStyle: dragActive ? 'solid' : 'dashed',
-          borderWidth: '2px',
-          borderColor: dragActive ? 'var(--border-active)' : 'var(--border-default)',
-          background: dragActive ? 'rgba(16,163,127,0.04)' : 'var(--bg-input)',
-          boxShadow: 'none',
+          borderRadius: '8px',
+          background: dragActive ? 'rgba(255, 255, 255, 0.05)' : file ? 'rgba(52, 199, 89, 0.05)' : 'var(--white)',
           position: 'relative',
           overflow: 'hidden',
-          transition: 'all 0.2s ease',
+          color: 'var(--deep-charcoal)',
+          boxShadow: dragActive ? '#e8e8e8 0px 0px 0px 2px' : 'var(--shadow-level-1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-
-
         <input
           type="file"
           accept={ALLOWED.join(',')}
@@ -83,50 +81,40 @@ export default function FileUpload({ onFile, file, disabled }: FileUploadProps) 
 
         {file ? (
           <div className="animate-fade-in">
-            <div style={{
-              width: 48, height: 48, borderRadius: '12px', margin: '0 auto 16px',
-              background: 'var(--accent-teal-dim)',
-              border: '1px solid var(--accent-orange-border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '20px',
-            }}>✅</div>
-            <p style={{ fontWeight: 600, fontSize: '15px', marginBottom: '5px', color: 'var(--text-primary)' }}>
+
+            <p className="text-h4" style={{ marginBottom: '6px' }}>
               {file.name}
             </p>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+            <p className="text-body" style={{ fontSize: '14px' }}>
               {formatSize(file.size)} — انقر لاستبدال الملف
             </p>
           </div>
         ) : (
           <div>
             <div style={{
-              width: 48, height: 48, borderRadius: '12px', margin: '0 auto 16px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-default)',
+              width: 56, height: 56, borderRadius: '8px', margin: '0 auto 20px',
+              background: 'rgba(50, 121, 249, 0.06)',
+              border: '1px solid rgba(50, 121, 249, 0.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '20px',
-              color: 'var(--text-muted)',
+              color: 'var(--primary-color)',
             }}>
-              <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="24" width="24" xmlns="http://www.w3.org/2000/svg">
+              <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24"
+                strokeLinecap="round" strokeLinejoin="round" height="26" width="26"
+                xmlns="http://www.w3.org/2000/svg">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </div>
-            <p style={{ fontWeight: 500, fontSize: '15px', marginBottom: '6px', color: 'var(--text-primary)' }}>
+            <p className="text-h4" style={{ marginBottom: '8px' }}>
               اسحب وأفلت الملف الصوتي هنا
             </p>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>
+            <p className="text-body" style={{ fontSize: '14px', marginBottom: '20px' }}>
               أو انقر للاختيار من جهازك
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
               {ALLOWED.map(ext => (
-                <span key={ext} style={{
-                  padding: '2px 8px', borderRadius: '4px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-muted)', fontSize: '12px', fontFamily: 'monospace',
-                }}>
+                <span key={ext} className="badge">
                   {ext}
                 </span>
               ))}
@@ -135,7 +123,15 @@ export default function FileUpload({ onFile, file, disabled }: FileUploadProps) 
         )}
       </div>
       {error && (
-        <p style={{ color: 'var(--accent-red)', fontSize: '13px', marginTop: '8px' }}>⚠️ {error}</p>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          color: '#e8e8e8', fontSize: '13px', marginTop: '10px',
+          padding: '10px 14px', borderRadius: '8px',
+          background: 'rgba(255, 0, 0, 0.06)',
+          border: '1px solid rgba(255, 0, 0, 0.2)',
+        }}>
+          ⚠️ {error}
+        </div>
       )}
     </div>
   );

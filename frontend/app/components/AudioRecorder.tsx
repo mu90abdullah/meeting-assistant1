@@ -4,10 +4,17 @@ import { useState, useRef, useEffect } from 'react';
 
 interface AudioRecorderProps {
   onFile: (file: File) => void;
+  file?: File | null;
   disabled?: boolean;
 }
 
-export default function AudioRecorder({ onFile, disabled }: AudioRecorderProps) {
+const formatSize = (bytes: number) => {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+};
+
+export default function AudioRecorder({ onFile, file, disabled }: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -35,19 +42,11 @@ export default function AudioRecorder({ onFile, disabled }: AudioRecorderProps) 
 
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        const file = new File([blob], `recording-${new Date().toISOString().replace(/:/g, '-')}.webm`, { type: 'audio/webm' });
-
-        // Save the audio to the backend immediately
-        try {
-          const formData = new FormData();
-          formData.append('audio', file);
-          await fetch('http://localhost:8000/api/save-audio', {
-            method: 'POST',
-            body: formData,
-          });
-        } catch (err) {
-          console.error('Error saving audio automatically:', err);
-        }
+        const file = new File(
+          [blob],
+          `recording-${new Date().toISOString().replace(/:/g, '-')}.webm`,
+          { type: 'audio/webm' }
+        );
 
         onFile(file);
         stream.getTracks().forEach(track => track.stop());
@@ -86,61 +85,104 @@ export default function AudioRecorder({ onFile, disabled }: AudioRecorderProps) 
   }, []);
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '32px 24px',
-      background: 'var(--bg-input)',
-      borderRadius: '12px',
-      border: '2px dashed var(--border-default)',
-      transition: 'all 0.2s ease',
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: file ? 'rgba(52, 199, 89, 0.05)' : 'var(--white)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        padding: '40px 24px',
+        borderWidth: '1px',
+        borderColor: file ? 'rgba(52, 199, 89, 0.5)' : 'rgba(255, 255, 255, 0.35)',
+        borderStyle: 'dashed',
+        borderRadius: '8px',
+        boxShadow: 'var(--shadow-level-1)',
+      }}
+    >
+      {/* Record button */}
       <button
         onClick={isRecording ? handleStop : handleStart}
         disabled={disabled && !isRecording}
-        className={isRecording ? "animate-pulse-glow" : ""}
         style={{
-          width: '76px',
-          height: '76px',
+          width: '80px',
+          height: '80px',
           borderRadius: '50%',
-          background: isRecording ? 'rgba(239, 68, 68, 0.12)' : '#fff',
-          border: `2px solid ${isRecording ? '#ef4444' : 'rgba(239, 68, 68, 0.5)'}`,
-          color: '#ef4444',
+          background: isRecording ? 'rgba(255, 255, 255, 0.08)' : 'var(--white)',
+          border: `2px solid ${isRecording ? 'rgba(255, 255, 255, 0.3)' : '#e8e8e8'}`,
+          color: isRecording ? '#ff3b30' : '#e8e8e8',
           cursor: disabled && !isRecording ? 'not-allowed' : 'pointer',
           opacity: disabled && !isRecording ? 0.55 : 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '28px',
+          fontSize: '32px',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           boxShadow: isRecording
-            ? 'inset 0 4px 12px rgba(0,0,0,0.15), 0 0 12px rgba(239,68,68,0.2)'
-            : '0 4px 12px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)',
-          transform: isRecording ? 'scale(0.92) translateY(4px)' : 'scale(1) translateY(0)',
+            ? '0 0 0 6px rgba(255, 255, 255, 0.12), var(--shadow-level-1)'
+            : 'var(--shadow-level-1)',
+          transform: isRecording ? 'scale(0.95)' : 'scale(1)',
           outline: 'none',
         }}
-        title={isRecording ? "إيقاف التسجيل" : "بدء التسجيل"}
+        title={isRecording ? 'إيقاف التسجيل' : 'بدء التسجيل'}
       >
-        {isRecording ? (
-          <div style={{ width: '22px', height: '22px', backgroundColor: '#ef4444', borderRadius: '4px' }} />
-        ) : (
-          "🎙️"
-        )}
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
       </button>
 
-      <div style={{ textAlign: 'center', marginTop: '16px', minHeight: '44px' }}>
+      {/* Status text */}
+      <div style={{ textAlign: 'center', marginTop: '20px', minHeight: '52px' }}>
         {isRecording ? (
           <>
-            <p style={{ color: '#ef4444', fontWeight: 700, fontSize: '20px', fontFamily: 'monospace', letterSpacing: '1px' }}>
+            <p style={{
+              color: '#ff3b30',
+              fontWeight: 600,
+              fontSize: '24px',
+              fontFamily: 'var(--font-code)',
+              letterSpacing: '2px',
+            }}>
               {formatTime(duration)}
             </p>
-            <p className="animate-fade-in" style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '6px' }}>
-              جاري التسجيل... انقر على المربع للإيقاف
+            <p className="animate-fade-in" style={{
+              color: 'var(--taupe-secondary)',
+              fontSize: '12px',
+              marginTop: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+            }}>
+              <span style={{
+                width: '8px', height: '8px', borderRadius: '50%',
+                background: 'var(--red-alert)',
+                display: 'inline-block',
+                animation: 'pulse-dot 1.2s ease-in-out infinite',
+              }} />
+              جاري التسجيل...  اضغط لايقاف التسجيل
             </p>
           </>
+        ) : file ? (
+          <div className="animate-fade-in">
+
+            <p className="text-h4" style={{ marginBottom: '6px' }}>
+              {file.name}
+            </p>
+            <p className="text-body" style={{ fontSize: '14px' }}>
+              {formatSize(file.size)} — تم التسجيل بنجاح
+            </p>
+          </div>
         ) : (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>
-            تسجيل مباشر
-          </p>
+          <>
+            <p className="text-h4" style={{ marginBottom: '4px' }}>
+              تسجيل مباشر
+            </p>
+            <p className="text-body" style={{ fontSize: '13px' }}>
+              انقر لبدء التسجيل من الميكروفون
+            </p>
+          </>
         )}
       </div>
     </div>

@@ -1,0 +1,9 @@
+
+
+python agent.py --audio testvoi.mp4 --whisper-mode local --title "ملخص الاجتماع" --participants mustafakamel516@gmail.com
+
+
+python agent.py --audio videoplayback.m4a --whisper-mode groq --title "مخرجات الاجتماع" --participants mustafakamel516@gmail.com
+
+
+python agent.py --audio videoplayback1.m4a --title "مخرجات الاجتماع" --participants mustafakamel516@gmail.com

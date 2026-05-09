@@ -60,11 +60,16 @@ export default function EmailInput({ emails, onChange, disabled }: EmailInputPro
 
   return (
     <div>
-      <label style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500, marginBottom: '12px', display: 'block' }}>
+      <label className="form-label">
         المستلمون (اختياري)
+        {emails.length > 0 && (
+          <span className="badge badge-accent" style={{ marginRight: '8px' }}>
+            {emails.length}
+          </span>
+        )}
       </label>
+
       <div
-        className="glass-card"
         style={{
           padding: '8px 12px',
           display: 'flex', flexWrap: 'wrap', gap: '7px', alignItems: 'center',
@@ -72,25 +77,28 @@ export default function EmailInput({ emails, onChange, disabled }: EmailInputPro
           cursor: 'text',
           opacity: disabled ? 0.55 : 1,
           transition: 'all 0.2s ease',
-          background: 'var(--bg-input)',
+          background: 'var(--white)',
           borderRadius: '8px',
-          border: `1px solid ${isFocused ? 'var(--border-active)' : 'var(--border-default)'}`,
-          boxShadow: isFocused ? '0 0 0 1px var(--border-active)' : 'none',
+          border: `1px solid ${isFocused ? '#e8e8e8' : 'rgba(255, 255, 255, 0.35)'}`,
+          boxShadow: isFocused ? '#e8e8e8 0px 0px 0px 2px' : 'var(--shadow-level-1)',
         }}
         onClick={() => (document.getElementById('email-input') as HTMLInputElement)?.focus()}
       >
         {emails.map((email, i) => (
-          <span key={email} className="tag animate-fade-in" style={{
-            background: 'var(--bg-secondary)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', borderRadius: '6px'
-          }}>
+          <span
+            key={email}
+            className="badge animate-fade-in"
+            style={{ fontSize: '12px', border: '1px solid var(--charcoal-trans)' }}
+          >
             {email}
             {!disabled && (
               <button
                 onClick={(e) => { e.stopPropagation(); removeEmail(i); }}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', fontSize: '16px', lineHeight: 1,
-                  padding: 0, display: 'flex', alignItems: 'center', marginLeft: '4px'
+                  color: '#e8e8e8', fontSize: '16px', lineHeight: 1,
+                  padding: 0, display: 'flex', alignItems: 'center', marginLeft: '4px',
+                  fontWeight: 600,
                 }}
                 title="حذف"
               >×</button>
@@ -107,20 +115,31 @@ export default function EmailInput({ emails, onChange, disabled }: EmailInputPro
           onFocus={() => setIsFocused(true)}
           onBlur={() => { setIsFocused(false); addEmail(input); }}
           disabled={disabled}
-          placeholder={emails.length === 0 ? '' : ''}
+          placeholder={emails.length === 0 ? ' ادخل البريد الإلكتروني واضغط Enter' : ''}
           style={{
             background: 'none', border: 'none', outline: 'none',
-            color: 'var(--text-primary)', fontSize: '15px',
-            flex: 1, minWidth: '200px', direction: 'ltr',
-            fontFamily: 'inherit',
+            color: 'var(--deep-charcoal)', fontSize: '16px',
+            flex: 1, minWidth: '200px', direction: 'rtl',
+            textAlign: 'right',
+            fontFamily: 'var(--font-secondary)',
           }}
         />
       </div>
-      {error && (
-        <p style={{ color: 'var(--accent-red)', fontSize: '13px', marginTop: '7px' }}>⚠️ {error}</p>
-      )}
-      <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '7px' }}>
 
+      {error && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          color: '#e8e8e8', fontSize: '13px', marginTop: '8px',
+          padding: '8px 12px',
+          borderRadius: '8px',
+          background: 'rgba(255, 0, 0, 0.05)',
+          border: '1px solid rgba(255, 0, 0, 0.2)',
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      <p className="text-caption" style={{ marginTop: '6px' }}>
       </p>
     </div>
   );

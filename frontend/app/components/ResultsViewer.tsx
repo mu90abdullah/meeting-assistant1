@@ -2,53 +2,32 @@
 
 import { useState } from 'react';
 
-interface ActionItem {
-  task: string;
-  assignee: string | null;
-  deadline: string | null;
-  priority: string | null;
-}
-
-interface Decision {
-  description: string;
-  made_by: string | null;
-  rationale: string | null;
-}
+interface ActionItem { task: string; assignee: string | null; deadline: string | null; priority: string | null; }
+interface Decision { description: string; made_by: string | null; rationale: string | null; }
 
 interface ResultData {
-  transcript: string;
-  language: string;
-  duration_seconds: number | null;
-  meeting_title: string;
-  summary: string;
-  key_topics: string[];
-  action_items: ActionItem[];
-  decisions: Decision[];
-  participants_mentioned: string[];
-  sentiment: string | null;
-  next_meeting_date: string | null;
-  email_sent: boolean;
-  email_error: string | null;
-  email_recipients: string[];
+  transcript: string; language: string; duration_seconds: number | null;
+  meeting_title: string; summary: string; key_topics: string[];
+  action_items: ActionItem[]; decisions: Decision[];
+  participants_mentioned: string[]; sentiment: string | null;
+  next_meeting_date: string | null; email_sent: boolean;
+  email_error: string | null; email_recipients: string[];
 }
 
 interface ResultsViewerProps { result: ResultData; }
-
 type Tab = 'summary' | 'transcript' | 'actions' | 'decisions';
 
 const PRIORITY_STYLES: Record<string, { bg: string; border: string; text: string; label: string }> = {
-
-};
-
-const SENTIMENT_MAP: Record<string, { icon: string; label: string; color: string }> = {
-
+  high: { bg: 'rgba(255, 255, 255, 0.1)', border: 'rgba(255, 255, 255, 0.3)', text: '#e8e8e8', label: 'عالية' },
+  medium: { bg: 'rgba(233, 185, 74, 0.1)', border: 'var(--warm-gold)', text: 'var(--warm-gold)', label: 'متوسطة' },
+  low: { bg: 'rgba(139, 134, 118, 0.1)', border: 'var(--warm-taupe)', text: 'var(--warm-taupe)', label: 'منخفضة' },
 };
 
 export default function ResultsViewer({ result }: ResultsViewerProps) {
   const [activeTab, setActiveTab] = useState<Tab>('summary');
   const [copied, setCopied] = useState(false);
 
-  const tabs: { id: Tab; label: string; icon: string; count?: number }[] = [
+  const tabs: { id: Tab; label: string; count?: number; icon: string }[] = [
     { id: 'summary', label: 'الملخص', icon: '' },
     { id: 'actions', label: 'المهام', icon: '', count: result.action_items.length },
     { id: 'decisions', label: 'القرارات', icon: '', count: result.decisions.length },
@@ -61,95 +40,88 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const sentimentInfo = result.sentiment ? SENTIMENT_MAP[result.sentiment] : null;
-
   return (
-    <div className="animate-fade-in-up" style={{ marginTop: '32px' }}>
+    <div className="animate-fade-in-up">
 
-      {/* Header card */}
-      <div className="glass-card" style={{ padding: '26px', marginBottom: '14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-              <div style={{
-                width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
-                background: 'var(--accent-teal-dim)', border: '1px solid var(--accent-orange-border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
-              }}>✅</div>
-              <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {result.meeting_title}
-              </h2>
+      {/* ── Success Header Card ── */}
+      <div className="card" style={{
+        padding: 0, overflow: 'hidden', marginBottom: '24px',
+      }}>
+
+
+        <div style={{ padding: '32px 40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+
+                <h2 className="text-h3" style={{ margin: 0 }}>
+                  {result.meeting_title || 'اجتماع بدون عنوان'}
+                </h2>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                <span className="badge">{result.language} </span>
+                {result.duration_seconds && (
+                  <span className="badge"> {Math.floor(result.duration_seconds / 60)}د {Math.round(result.duration_seconds % 60)}ث</span>
+                )}
+                {result.next_meeting_date && (
+                  <span className="badge">📅 القادم: {result.next_meeting_date}</span>
+                )}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}> اللغة: {result.language}</span>
-              {result.duration_seconds && (
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  {Math.floor(result.duration_seconds / 60)}د {Math.round(result.duration_seconds % 60)}ث
-                </span>
-              )}
-              {sentimentInfo && (
-                <span style={{ fontSize: '12px', color: sentimentInfo.color }}>
-                  {sentimentInfo.icon} {sentimentInfo.label}
-                </span>
-              )}
-              {result.next_meeting_date && (
-                <span style={{ fontSize: '12px', color: 'var(--accent-sage)' }}>
-                  القادم: {result.next_meeting_date}
-                </span>
-              )}
-            </div>
+
+            {result.email_recipients.length > 0 && (
+              <div>
+                {result.email_sent
+                  ? <span className="badge badge-accent">✉️ أُرسل ({result.email_recipients.length})</span>
+                  : <span className="badge" style={{ color: '#e8e8e8' }}>✗ فشل الإرسال</span>
+                }
+              </div>
+            )}
           </div>
 
-          {result.email_recipients.length > 0 && (
-            <div>
-              {result.email_sent
-                ? <span className="badge badge-done"> أُرسل ({result.email_recipients.length})</span>
-                : <span className="badge badge-error"> فشل الإرسال</span>
-              }
+          {result.key_topics.length > 0 && (
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--charcoal-trans)' }}>
+              <p className="form-label">
+                المحاور الرئيسية
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {result.key_topics.map((topic, i) => (
+                  <span key={i} className="badge">{topic}</span>
+                ))}
+              </div>
             </div>
           )}
         </div>
-
-        {result.key_topics.length > 0 && (
-          <div style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-            {result.key_topics.map((topic, i) => (
-              <span key={i} style={{
-                padding: '3px 11px', borderRadius: '7px', fontSize: '12px',
-                background: 'rgba(130,160,148,0.08)', border: '1px solid rgba(130,160,148,0.18)',
-                color: 'var(--text-secondary)',
-              }}>
-                {topic}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '14px', overflowX: 'auto', paddingBottom: '2px' }}>
+      {/* ── Tabs ── */}
+      <div style={{
+        display: 'flex', gap: '4px', marginBottom: '24px',
+        background: 'var(--white)', borderRadius: '999px',
+        padding: '6px', border: '1px solid var(--charcoal-trans)',
+        boxShadow: 'var(--shadow-level-1)'
+      }}>
         {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '9px 18px', borderRadius: '8px', cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: '13px', fontWeight: 500, whiteSpace: 'nowrap',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              transition: 'all 0.15s ease',
-              background: activeTab === tab.id ? 'var(--bg-secondary)' : 'transparent',
-              color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
-              border: activeTab === tab.id
-                ? '1px solid var(--border-default)'
-                : '1px solid transparent',
-            }}
-          >
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+            flex: 1, padding: '10px 16px', borderRadius: '999px', cursor: 'pointer',
+            fontFamily: 'var(--font-primary)', fontSize: '14px',
+            fontWeight: activeTab === tab.id ? 600 : 500, whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            transition: 'all 0.15s ease',
+            background: activeTab === tab.id ? '#e8e8e8' : 'transparent',
+            color: activeTab === tab.id ? '#15140F' : 'var(--deep-charcoal)',
+            border: 'none', boxShadow: activeTab === tab.id ? '0 4px 14px 0 rgba(255, 255, 255, 0.1)' : 'none',
+          }}>
             <span>{tab.icon}</span>
             {tab.label}
             {tab.count !== undefined && (
               <span style={{
-                background: activeTab === tab.id ? 'var(--bg-primary)' : 'var(--bg-secondary)',
-                borderRadius: '6px', padding: '2px 6px', fontSize: '11px', border: '1px solid var(--border-subtle)',
-                color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
+                background: activeTab === tab.id ? 'rgba(0,0,0,0.1)' : 'var(--cream)',
+                borderRadius: '20px', padding: '2px 8px', fontSize: '11px',
+                color: activeTab === tab.id ? '#15140F' : 'var(--deep-charcoal)',
+                border: activeTab === tab.id ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                fontWeight: 700, fontFamily: 'var(--font-primary)',
               }}>
                 {tab.count}
               </span>
@@ -158,30 +130,27 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
         ))}
       </div>
 
-      {/* Tab content */}
+      {/* ── Tab Content ── */}
       <div key={activeTab} className="animate-fade-in">
 
-        {/* SUMMARY */}
         {activeTab === 'summary' && (
-          <div className="glass-card" style={{ padding: '26px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '14px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div className="card">
+            <h3 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8' }}>
+              <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
               الملخص التنفيذي
             </h3>
-            <p className="arabic-text" style={{ color: 'var(--text-primary)', fontSize: '15px' }}>
+            <p className="text-body" style={{ padding: '24px', background: 'var(--white)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', marginTop: '16px' }}>
               {result.summary}
             </p>
             {result.participants_mentioned.length > 0 && (
-              <div style={{ marginTop: '22px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  👥 المشاركون المذكورون
+              <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--charcoal-trans)' }}>
+                <h4 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8', marginBottom: '16px' }}>
+                  <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
+                  المشاركون المذكورون
                 </h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {result.participants_mentioned.map((p, i) => (
-                    <span key={i} style={{
-                      padding: '4px 13px', borderRadius: '6px', fontSize: '13px',
-                      background: 'var(--bg-secondary)', border: '1px solid var(--border-default)',
-                      color: 'var(--text-primary)',
-                    }}>👤 {p}</span>
+                    <span key={i} className="badge"> {p}</span>
                   ))}
                 </div>
               </div>
@@ -189,46 +158,30 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
           </div>
         )}
 
-        {/* ACTIONS */}
         {activeTab === 'actions' && (
-          <div className="glass-card" style={{ padding: '26px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '18px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div className="card">
+            <h3 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8', marginBottom: '24px' }}>
+              <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
               قائمة المهام — {result.action_items.length} مهمة
             </h3>
             {result.action_items.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '28px 0' }}>
-                لم يتم استخراج أي مهام من هذا الاجتماع
-              </p>
+              <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--warm-taupe)', background: 'var(--white)', borderRadius: '12px', border: '1px solid var(--charcoal-trans)' }}>
+                <p style={{ fontSize: '32px', marginBottom: '12px' }}></p>
+                <p className="text-body">لم يتم استخراج أي مهام</p>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {result.action_items.map((item, i) => {
                   const pStyle = item.priority ? PRIORITY_STYLES[item.priority] : null;
                   return (
-                    <div key={i} style={{
-                      padding: '15px 18px', borderRadius: '10px',
-                      background: 'var(--bg-input)',
-                      border: '1px solid var(--border-default)',
-                      display: 'flex', gap: '14px', alignItems: 'flex-start',
-                    }}>
-                      <div style={{
-                        width: '26px', height: '26px', borderRadius: '6px', flexShrink: 0,
-                        background: 'var(--bg-secondary)', border: '1px solid var(--border-default)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)',
-                      }}>{i + 1}</div>
+                    <div key={i} style={{ padding: '20px 24px', borderRadius: '12px', background: 'var(--white)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', gap: '20px', alignItems: 'flex-start', boxShadow: 'var(--shadow-level-1)' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, background: 'var(--coral)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 600, color: 'var(--white)' }}>{i + 1}</div>
                       <div style={{ flex: 1 }}>
-                        <p className="arabic-text" style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px', lineHeight: '1.6' }}>
-                          {item.task}
-                        </p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                          {item.assignee && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>👤 {item.assignee}</span>}
-                          {item.deadline && <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>📅 {item.deadline}</span>}
-                          {pStyle && (
-                            <span style={{
-                              fontSize: '11px', padding: '2px 9px', borderRadius: '6px',
-                              background: pStyle.bg, border: `1px solid ${pStyle.border}`, color: pStyle.text,
-                            }}>{pStyle.label}</span>
-                          )}
+                        <p className="text-h4" style={{ marginBottom: '12px' }}>{item.task}</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                          {item.assignee && <span className="badge">👤 {item.assignee}</span>}
+                          {item.deadline && <span className="badge">📅 {item.deadline}</span>}
+                          {pStyle && <span className="badge" style={{ background: pStyle.bg, border: `1px solid ${pStyle.border}`, color: pStyle.text }}>{pStyle.label}</span>}
                         </div>
                       </div>
                     </div>
@@ -239,32 +192,26 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
           </div>
         )}
 
-        {/* DECISIONS */}
         {activeTab === 'decisions' && (
-          <div className="glass-card" style={{ padding: '26px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '18px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div className="card">
+            <h3 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8', marginBottom: '24px' }}>
+              <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
               القرارات المتخذة — {result.decisions.length} قرار
             </h3>
             {result.decisions.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '28px 0' }}>لم يتم استخراج أي قرارات</p>
+              <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--warm-taupe)', background: 'var(--white)', borderRadius: '12px', border: '1px solid var(--charcoal-trans)' }}>
+                <p style={{ fontSize: '32px', marginBottom: '12px' }}></p>
+                <p className="text-body">لم يتم استخراج أي قرارات</p>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {result.decisions.map((dec, i) => (
-                  <div key={i} style={{
-                    padding: '18px 20px', borderRadius: '10px',
-                    background: 'var(--bg-input)',
-                    border: '1px solid var(--border-default)',
-                    borderRight: '3px solid var(--accent-teal)',
-                  }}>
-                    <p className="arabic-text" style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>
-                      {dec.description}
-                    </p>
-                    {dec.made_by && (
-                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>👤 {dec.made_by}</p>
-                    )}
+                  <div key={i} style={{ padding: '24px', borderRadius: '12px', background: 'var(--white)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRight: '4px solid rgba(255, 255, 255, 0.2)', boxShadow: 'var(--shadow-level-1)' }}>
+                    <p className="text-h4" style={{ marginBottom: '12px' }}>{dec.description}</p>
+                    {dec.made_by && <span className="badge" style={{ marginBottom: '12px' }}>👤 {dec.made_by}</span>}
                     {dec.rationale && (
-                      <p className="arabic-text" style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        {dec.rationale}
+                      <p className="text-body" style={{ color: 'var(--warm-taupe)', fontStyle: 'italic', marginTop: '12px', borderTop: '1px solid var(--charcoal-trans)', paddingTop: '12px' }}>
+                        💡 {dec.rationale}
                       </p>
                     )}
                   </div>
@@ -274,36 +221,19 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
           </div>
         )}
 
-        {/* TRANSCRIPT */}
         {activeTab === 'transcript' && (
-          <div className="glass-card" style={{ padding: '26px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8', margin: 0 }}>
+                <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
                 النص الكامل — {result.transcript.length.toLocaleString('ar')} حرف
               </h3>
-              <button
-                onClick={copyTranscript}
-                style={{
-                  padding: '7px 14px', borderRadius: '6px',
-                  border: `1px solid ${copied ? 'var(--accent-green)' : 'var(--border-default)'}`,
-                  background: copied ? 'var(--bg-secondary)' : 'var(--bg-input)',
-                  color: copied ? 'var(--accent-green)' : 'var(--text-primary)',
-                  cursor: 'pointer', fontSize: '12px', fontFamily: 'inherit',
-                  fontWeight: 500, transition: 'all 0.15s ease',
-                }}
-              >
-                {copied ? ' تم النسخ' : ' نسخ'}
+              <button onClick={copyTranscript} className={copied ? 'btn-small-primary' : 'btn-tertiary'}>
+                {copied ? '✓ تم النسخ' : ' نسخ'}
               </button>
             </div>
-            <div style={{
-              background: 'var(--bg-input)', borderRadius: '10px', padding: '18px',
-              maxHeight: '480px', overflowY: 'auto',
-              border: '1px solid var(--border-default)',
-            }}>
-              <p className="arabic-text" style={{
-                fontSize: '14px', color: 'var(--text-primary)',
-                whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-              }}>
+            <div style={{ background: 'var(--white)', borderRadius: '12px', padding: '32px', maxHeight: '500px', overflowY: 'auto', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <p className="text-body" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {result.transcript}
               </p>
             </div>
