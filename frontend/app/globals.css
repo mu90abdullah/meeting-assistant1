@@ -1070,6 +1070,94 @@ strong {
 }
 
 /* ═══════════════════════════════════════════════════════
+   Responsive — Mobile (max-width: 768px)
+═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  .navbar-inner {
+    padding: 0 16px;
+  }
+
+  .navbar-nav {
+    display: none !important;
+  }
+
+  .navbar-hamburger {
+    display: flex !important;
+  }
+
+  .card {
+    padding: 20px 16px !important;
+  }
+
+  .container {
+    padding: 0 16px !important;
+  }
+
+  section {
+    padding: 48px 16px !important;
+  }
+
+  .text-display {
+    font-size: clamp(22px, 7vw, 38px) !important;
+    letter-spacing: -0.5px !important;
+    white-space: normal !important;
+  }
+
+  .text-h2 {
+    font-size: clamp(18px, 5vw, 28px) !important;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Split input: stack vertically */
+  div[style*="row-reverse"] {
+    flex-direction: column !important;
+  }
+
+  /* Mode toggle: single column */
+  div[style*="1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* How it works grid */
+  div[style*="auto-fit"] {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* Shimmer pill */
+  .shimmer-pill-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .shimmer-pill-content {
+    white-space: normal !important;
+    padding: 12px 24px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-inner {
+    padding: 0 12px;
+  }
+
+  .card {
+    padding: 16px 12px !important;
+    border-radius: 12px !important;
+  }
+
+  section {
+    padding: 32px 12px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
    Animated Border Beam (Hero Badge)
 ═══════════════════════════════════════════════════════ */
 @property --angle {
