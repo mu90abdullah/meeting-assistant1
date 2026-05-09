@@ -11,14 +11,14 @@ const MODES = [
     id: 'local' as const,
     icon: '🖥️',
     title: 'Local Mode',
-    description: 'المعالجة على خادمك الخاص بشكل خاص',
+    description: 'المعالجة محلياً على جهازك ',
     badge: 'Private',
   },
   {
     id: 'groq' as const,
     icon: '⚡',
     title: 'Fast by Groq',
-    description: 'معالجة سريعة باستخدام Groq AI',
+    description: ' معالجة سريعة',
     badge: 'Fast',
   },
 ];
