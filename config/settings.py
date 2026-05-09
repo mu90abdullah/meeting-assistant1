@@ -67,7 +67,11 @@ class Settings:
     max_retries: int = field(default_factory=lambda: int(_optional("MAX_RETRIES", "3")))
     log_level: str = field(default_factory=lambda: _optional("LOG_LEVEL", "INFO"))
     output_dir: Path = field(
-        default_factory=lambda: Path(_optional("OUTPUT_DIR", str(_ROOT / "output")))
+        default_factory=lambda: Path(
+            _optional("OUTPUT_DIR", "/tmp/meeting_output")
+            if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RENDER") or os.getenv("VERCEL")
+            else _optional("OUTPUT_DIR", str(_ROOT / "output"))
+        )
     )
 
     def __post_init__(self) -> None:
