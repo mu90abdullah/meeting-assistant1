@@ -26,8 +26,15 @@ const MODES = [
 export default function ModeToggle({ mode, onChange, disabled }: ModeToggleProps) {
   return (
     <div>
-      <label id="mode-selection-label" className="form-label">وضع المعالجة</label>
+      <label 
+        id="mode-selection-label" 
+        htmlFor="mode-selection-group"
+        className="form-label"
+      >
+        وضع المعالجة
+      </label>
       <div 
+        id="mode-selection-group"
         role="radiogroup" 
         aria-labelledby="mode-selection-label"
         style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
