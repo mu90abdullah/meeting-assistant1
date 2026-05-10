@@ -40,6 +40,11 @@ try:
 except ImportError:
     Document = None
 
+try:
+    import io
+except ImportError:
+    io = None
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -75,10 +80,14 @@ def _update_job(job_id: str, **kwargs):
         JOBS[job_id].update(kwargs)
 
 
-def _save_docx_summary(analysis: MeetingAnalysis, output_dir: Path, base_name: str) -> Optional[Path]:
+def _build_docx_summary_bytes(analysis: MeetingAnalysis, base_name: str):
+    """
+    Build a DOCX summary document in memory and return (filename, bytes).
+    Returns None if python-docx is unavailable.
+    """
     if Document is None:
         return None
-    path = output_dir / f"{base_name}_Summary.docx"
+    filename = f"{base_name}_Summary.docx"
     doc = Document()
     doc.add_heading(analysis.meeting_title, level=0)
     doc.add_heading("الملخص (Summary)", level=1)
@@ -111,14 +120,21 @@ def _save_docx_summary(analysis: MeetingAnalysis, output_dir: Path, base_name: s
     if analysis.next_meeting_date:
         doc.add_heading("الاجتماع القادم", level=1)
         doc.add_paragraph(analysis.next_meeting_date)
-    doc.save(str(path))
-    return path
+    # Save to in-memory buffer (no disk I/O)
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return (filename, buffer.read())
 
 
-def _save_docx_transcript(transcription: TranscriptionResult, analysis: MeetingAnalysis, output_dir: Path, base_name: str) -> Optional[Path]:
+def _build_docx_transcript_bytes(transcription: TranscriptionResult, analysis: MeetingAnalysis, base_name: str):
+    """
+    Build a DOCX transcript document in memory and return (filename, bytes).
+    Returns None if python-docx is unavailable.
+    """
     if Document is None:
         return None
-    path = output_dir / f"{base_name}_Transcript.docx"
+    filename = f"{base_name}_Transcript.docx"
     doc = Document()
     doc.add_heading(f"التفريغ النصي الكامل - {analysis.meeting_title}", level=0)
     doc.add_paragraph(f"الملف الصوتي: {transcription.audio_file}")
@@ -127,8 +143,11 @@ def _save_docx_transcript(transcription: TranscriptionResult, analysis: MeetingA
     for line in transcription.text.split("\n"):
         if line.strip():
             doc.add_paragraph(line.strip())
-    doc.save(str(path))
-    return path
+    # Save to in-memory buffer (no disk I/O)
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return (filename, buffer.read())
 
 
 # ── Background pipeline ────────────────────────────────────────────────────────
@@ -185,18 +204,19 @@ def run_pipeline(
                     stage=f"اكتمل التحليل ({len(analysis.action_items)} مهام, {len(analysis.decisions)} قرارات) — جاري حفظ الملفات...")
         logger.info("[%s] Analysis done.", job_id)
 
-        # ── Step 3: Save output files ──────────────────────────────────────────
-        output_dir = settings.output_dir
+        # ── Step 3: Build output documents (in-memory, no disk I/O) ───────────
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         base_name = f"{timestamp}_{job_id[:8]}"
 
         attachments = []
-        summary_docx = _save_docx_summary(analysis, output_dir, base_name)
-        transcript_docx = _save_docx_transcript(transcription, analysis, output_dir, base_name)
-        if summary_docx:
-            attachments.append(summary_docx)
-        if transcript_docx:
-            attachments.append(transcript_docx)
+        summary_att = _build_docx_summary_bytes(analysis, base_name)
+        transcript_att = _build_docx_transcript_bytes(transcription, analysis, base_name)
+        if summary_att:
+            attachments.append(summary_att)
+            logger.info("[%s] Summary DOCX built in memory: %s (%d bytes)", job_id, summary_att[0], len(summary_att[1]))
+        if transcript_att:
+            attachments.append(transcript_att)
+            logger.info("[%s] Transcript DOCX built in memory: %s (%d bytes)", job_id, transcript_att[0], len(transcript_att[1]))
 
         # ── Step 4: Email ──────────────────────────────────────────────────────
         email_sent = False

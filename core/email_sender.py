@@ -11,10 +11,12 @@ Features:
   - Per-recipient error tracking
   - TLS support
   - Dry-run mode (logs email without sending)
+  - In-memory attachment support (Vercel/serverless compatible)
 """
 
 from __future__ import annotations
 
+import io
 import logging
 import smtplib
 from datetime import datetime, timezone, timedelta
@@ -23,7 +25,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -31,6 +33,9 @@ from config.settings import Settings
 from core.models import EmailDeliveryResult, MeetingAnalysis, RecipientResult
 
 logger = logging.getLogger(__name__)
+
+# Type alias: attachment can be a Path (legacy) or (filename, bytes) tuple (in-memory)
+Attachment = Union[Path, Tuple[str, bytes]]
 
 # Template directory is two levels up from this file: project_root/templates/
 _TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
@@ -61,7 +66,7 @@ class EmailSender:
         self,
         analysis: MeetingAnalysis,
         recipients: List[str],
-        attachments: Optional[List[Path]] = None,
+        attachments: Optional[List[Attachment]] = None,
     ) -> EmailDeliveryResult:
         """
         Render and send the meeting summary email.
@@ -69,7 +74,9 @@ class EmailSender:
         Args:
             analysis: Structured meeting analysis from the LLM step.
             recipients: List of recipient email addresses.
-            attachments: Optional list of file paths to attach to the email.
+            attachments: Optional list of attachments. Each item can be:
+                         - A Path object (legacy, reads file from disk)
+                         - A (filename, bytes) tuple (in-memory, Vercel-safe)
 
         Returns:
             EmailDeliveryResult with per-recipient success/failure status.
@@ -87,6 +94,10 @@ class EmailSender:
                 subject=subject,
             )
 
+        # Normalize attachments to (filename, bytes) tuples
+        normalized = self._normalize_attachments(attachments)
+        logger.info("Prepared %d attachment(s) for sending.", len(normalized))
+
         # ── Resend HTTP API Route ──
         if getattr(self._settings, "resend_api_key", ""):
             return self._send_via_resend(
@@ -94,7 +105,7 @@ class EmailSender:
                 subject=subject,
                 html_body=html_body,
                 plain_body=plain_body,
-                attachments=attachments,
+                attachments=normalized,
             )
 
         # ── Standard SMTP Route ──
@@ -107,7 +118,7 @@ class EmailSender:
                     subject=subject,
                     html_body=html_body,
                     plain_body=plain_body,
-                    attachments=attachments,
+                    attachments=normalized,
                 )
                 results.append(result)
 
@@ -118,6 +129,41 @@ class EmailSender:
             delivery.total_failed,
         )
         return delivery
+
+    def _normalize_attachments(
+        self, attachments: Optional[List[Attachment]]
+    ) -> List[Tuple[str, bytes]]:
+        """
+        Convert any mix of Path objects and (name, bytes) tuples
+        into a unified list of (filename, bytes) tuples.
+        Works on Vercel and any serverless environment.
+        """
+        result: List[Tuple[str, bytes]] = []
+        if not attachments:
+            return result
+        for att in attachments:
+            try:
+                if isinstance(att, tuple):
+                    # Already in-memory: (filename, bytes)
+                    filename, data = att
+                    if data:
+                        result.append((filename, data))
+                        logger.debug("Attachment ready (in-memory): %s (%d bytes)", filename, len(data))
+                    else:
+                        logger.warning("Skipping empty in-memory attachment: %s", filename)
+                elif isinstance(att, Path):
+                    # Legacy file-path attachment
+                    if att.exists():
+                        data = att.read_bytes()
+                        result.append((att.name, data))
+                        logger.debug("Attachment ready (file): %s (%d bytes)", att.name, len(data))
+                    else:
+                        logger.warning("Attachment file not found, skipping: %s", att)
+                else:
+                    logger.warning("Unknown attachment type: %s", type(att))
+            except Exception as e:
+                logger.error("Failed to prepare attachment: %s", e)
+        return result
 
     # ── SMTP ──────────────────────────────────────────────────────────────────
 
@@ -151,29 +197,30 @@ class EmailSender:
         subject: str,
         html_body: str,
         plain_body: str,
-        attachments: Optional[List[Path]] = None,
+        attachments: Optional[List[Tuple[str, bytes]]] = None,
     ) -> RecipientResult:
         """Send to a single recipient and return its result."""
         try:
-            msg = MIMEMultipart("alternative")
+            msg = MIMEMultipart("mixed")
             msg["Subject"] = subject
             msg["From"] = f"{self._settings.email_from_name} <{self._settings.smtp_user}>"
             msg["To"] = recipient
 
-            msg.attach(MIMEText(plain_body, "plain", "utf-8"))
-            msg.attach(MIMEText(html_body, "html", "utf-8"))
+            # Attach HTML and plain text parts
+            body_part = MIMEMultipart("alternative")
+            body_part.attach(MIMEText(plain_body, "plain", "utf-8"))
+            body_part.attach(MIMEText(html_body, "html", "utf-8"))
+            msg.attach(body_part)
 
+            # Attach files from in-memory bytes (Vercel-safe)
             if attachments:
-                for filepath in attachments:
-                    if not filepath.exists():
-                        continue
-                    with open(filepath, "rb") as f:
-                        part = MIMEBase("application", "octet-stream")
-                        part.set_payload(f.read())
+                for filename, data in attachments:
+                    part = MIMEBase("application", "octet-stream")
+                    part.set_payload(data)
                     encoders.encode_base64(part)
                     part.add_header(
                         "Content-Disposition",
-                        f"attachment; filename={filepath.name}",
+                        f'attachment; filename="{filename}"',
                     )
                     msg.attach(part)
 
@@ -191,9 +238,9 @@ class EmailSender:
         subject: str,
         html_body: str,
         plain_body: str,
-        attachments: Optional[List[Path]] = None,
+        attachments: Optional[List[Tuple[str, bytes]]] = None,
     ) -> EmailDeliveryResult:
-        """Send emails using the Resend HTTP API to bypass SMTP restrictions."""
+        """Send emails using the Resend HTTP API (in-memory, Vercel-safe)."""
         import urllib.request
         import urllib.error
         import json
@@ -206,17 +253,16 @@ class EmailSender:
         from_email = self._settings.smtp_user if self._settings.smtp_user else "onboarding@resend.dev"
         from_header = f"{self._settings.email_from_name} <{from_email}>"
 
+        # Build attachment list from in-memory (filename, bytes) tuples — no disk I/O needed
         attachment_list = []
         if attachments:
-            for filepath in attachments:
-                if not filepath.exists():
-                    continue
-                with open(filepath, "rb") as f:
-                    content = base64.b64encode(f.read()).decode('utf-8')
-                    attachment_list.append({
-                        "filename": filepath.name,
-                        "content": content
-                    })
+            for filename, data in attachments:
+                content = base64.b64encode(data).decode("utf-8")
+                attachment_list.append({
+                    "filename": filename,
+                    "content": content
+                })
+                logger.debug("Resend attachment: %s (%d bytes encoded)", filename, len(content))
 
         payload = {
             "from": from_header,
@@ -232,7 +278,7 @@ class EmailSender:
         req = urllib.request.Request(url, data=data, method="POST")
         req.add_header("Authorization", f"Bearer {self._settings.resend_api_key}")
         req.add_header("Content-Type", "application/json")
-        req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        req.add_header("User-Agent", "Mozilla/5.0 (compatible; MeetingAssistant/2.0)")
 
         results = []
         try:
