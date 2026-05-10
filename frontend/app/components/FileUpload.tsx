@@ -51,6 +51,14 @@ export default function FileUpload({ onFile, file, disabled }: FileUploadProps) 
     <div>
       <label htmlFor="audio-file-upload" className="form-label">الملف الصوتي</label>
       <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            (document.getElementById('audio-file-upload') as HTMLInputElement)?.click();
+          }
+        }}
         onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
         onDrop={handleDrop}

@@ -44,7 +44,7 @@ export default function AudioRecorder({ onFile, file, disabled }: AudioRecorderP
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const file = new File(
           [blob],
-          `recording-${new Date().toISOString().replace(/:/g, '-')}.webm`,
+          `recording-${new Date().toISOString().replaceAll(':', '-')}.webm`,
           { type: 'audio/webm' }
         );
 
@@ -160,7 +160,7 @@ export default function AudioRecorder({ onFile, file, disabled }: AudioRecorderP
                 background: 'var(--red-alert)',
                 display: 'inline-block',
                 animation: 'pulse-dot 1.2s ease-in-out infinite',
-              }} />
+              }} />{' '}
               جاري التسجيل...  اضغط لايقاف التسجيل
             </p>
           </>
