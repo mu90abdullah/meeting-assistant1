@@ -6,6 +6,7 @@ Unit tests for the EmailSender class.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -24,7 +25,7 @@ def mock_settings():
     settings.smtp_host = "smtp.gmail.com"
     settings.smtp_port = 587
     settings.smtp_user = "agent@example.com"
-    settings.smtp_password = "secret"
+    settings.smtp_password = os.environ.get("SMTP_PASSWORD", "dummy-test-value")
     settings.smtp_use_tls = True
     settings.email_from_name = "Meeting Assistant"
     return settings
