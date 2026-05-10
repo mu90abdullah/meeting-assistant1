@@ -110,6 +110,29 @@ def _update_job(job_id: str, **kwargs):
         JOBS[job_id].update(kwargs)
 
 
+def _add_action_items_table(doc, action_items):
+    doc.add_heading("المهام (Action Items)", level=1)
+    table = doc.add_table(rows=1, cols=5)
+    table.style = "Table Grid"
+    hdr = table.rows[0].cells
+    hdr[0].text = "#"
+    hdr[1].text = "المهمة"
+    hdr[2].text = "المسؤول"
+    hdr[3].text = "الموعد"
+    hdr[4].text = "الأولوية"
+    for i, item in enumerate(action_items, 1):
+        row = table.add_row().cells
+        row[0].text = str(i)
+        row[1].text = item.task.replace("\n", " ")
+        row[2].text = item.assignee or "—"
+        row[3].text = item.deadline or "—"
+        row[4].text = item.priority or "—"
+
+def _add_decisions_section(doc, decisions):
+    doc.add_heading("القرارات (Decisions)", level=1)
+    for i, dec in enumerate(decisions, 1):
+        doc.add_paragraph(f"{i}. {dec.description.strip()}")
+
 def _build_docx_summary_bytes(analysis: MeetingAnalysis, base_name: str):
     """
     Build a DOCX summary document in memory and return (filename, bytes).
@@ -126,27 +149,13 @@ def _build_docx_summary_bytes(analysis: MeetingAnalysis, base_name: str):
         doc.add_heading("المواضيع الرئيسية", level=1)
         for t in analysis.key_topics:
             doc.add_paragraph(t, style="List Bullet")
+            
     if analysis.action_items:
-        doc.add_heading("المهام (Action Items)", level=1)
-        table = doc.add_table(rows=1, cols=5)
-        table.style = "Table Grid"
-        hdr = table.rows[0].cells
-        hdr[0].text = "#"
-        hdr[1].text = "المهمة"
-        hdr[2].text = "المسؤول"
-        hdr[3].text = "الموعد"
-        hdr[4].text = "الأولوية"
-        for i, item in enumerate(analysis.action_items, 1):
-            row = table.add_row().cells
-            row[0].text = str(i)
-            row[1].text = item.task.replace("\n", " ")
-            row[2].text = item.assignee or "—"
-            row[3].text = item.deadline or "—"
-            row[4].text = item.priority or "—"
+        _add_action_items_table(doc, analysis.action_items)
+        
     if analysis.decisions:
-        doc.add_heading("القرارات (Decisions)", level=1)
-        for i, dec in enumerate(analysis.decisions, 1):
-            doc.add_paragraph(f"{i}. {dec.description.strip()}")
+        _add_decisions_section(doc, analysis.decisions)
+        
     if analysis.next_meeting_date:
         doc.add_heading("الاجتماع القادم", level=1)
         doc.add_paragraph(analysis.next_meeting_date)
