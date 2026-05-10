@@ -251,6 +251,8 @@ def step_send_email(
 # Output & display
 # ─────────────────────────────────────────────────────────────────────────────
 
+JSON_EXT = ".json"
+
 def save_json_output(result: PipelineResult, output_dir: Path) -> Path:
     """Save the full pipeline result as a timestamped JSON file."""
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -269,7 +271,7 @@ def save_json_output(result: PipelineResult, output_dir: Path) -> Path:
 
 def save_markdown_output(analysis: MeetingAnalysis, output_dir: Path, json_filename: str) -> Path:
     """Save the meeting analysis as a beautifully formatted Markdown file."""
-    md_filename = json_filename.replace(".json", ".md")
+    md_filename = json_filename.replace(JSON_EXT, ".md")
     output_path = output_dir / md_filename
 
     lines = [
@@ -321,12 +323,38 @@ def save_markdown_output(analysis: MeetingAnalysis, output_dir: Path, json_filen
     return output_path
 
 
+def _build_action_items_table(doc, action_items):
+    doc.add_heading("المهام (Action Items)", level=1)
+    table = doc.add_table(rows=1, cols=5)
+    table.style = 'Table Grid'
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = "#"
+    hdr_cells[1].text = "المهمة (Task)"
+    hdr_cells[2].text = "المسؤول (Assignee)"
+    hdr_cells[3].text = "الموعد (Deadline)"
+    hdr_cells[4].text = "الأولوية (Priority)"
+    
+    for i, item in enumerate(action_items, 1):
+        row_cells = table.add_row().cells
+        row_cells[0].text = str(i)
+        row_cells[1].text = item.task.replace("\n", " ")
+        row_cells[2].text = item.assignee or "—"
+        row_cells[3].text = item.deadline or "—"
+        row_cells[4].text = item.priority or "—"
+
+def _build_decisions_section(doc, decisions):
+    doc.add_heading("القرارات (Decisions)", level=1)
+    for i, dec in enumerate(decisions, 1):
+        doc.add_paragraph(f"{i}. {dec.description.strip()}")
+        if dec.rationale:
+            doc.add_paragraph(f"السبب: {dec.rationale.strip()}", style='List Bullet')
+
 def save_docx_summary_output(analysis: MeetingAnalysis, output_dir: Path, json_filename: str) -> Path:
     """Save the meeting analysis summary as a Word Document (.docx)."""
     if Document is None:
         return output_dir / "[docx_missing].txt"
         
-    docx_filename = json_filename.replace(".json", "_Summary.docx")
+    docx_filename = json_filename.replace(JSON_EXT, "_Summary.docx")
     output_path = output_dir / docx_filename
 
     doc = Document()
@@ -341,30 +369,10 @@ def save_docx_summary_output(analysis: MeetingAnalysis, output_dir: Path, json_f
             doc.add_paragraph(t, style='List Bullet')
             
     if analysis.action_items:
-        doc.add_heading("المهام (Action Items)", level=1)
-        table = doc.add_table(rows=1, cols=5)
-        table.style = 'Table Grid'
-        hdr_cells = table.rows[0].cells
-        hdr_cells[0].text = "#"
-        hdr_cells[1].text = "المهمة (Task)"
-        hdr_cells[2].text = "المسؤول (Assignee)"
-        hdr_cells[3].text = "الموعد (Deadline)"
-        hdr_cells[4].text = "الأولوية (Priority)"
-        
-        for i, item in enumerate(analysis.action_items, 1):
-            row_cells = table.add_row().cells
-            row_cells[0].text = str(i)
-            row_cells[1].text = item.task.replace("\n", " ")
-            row_cells[2].text = item.assignee or "—"
-            row_cells[3].text = item.deadline or "—"
-            row_cells[4].text = item.priority or "—"
+        _build_action_items_table(doc, analysis.action_items)
 
     if analysis.decisions:
-        doc.add_heading("القرارات (Decisions)", level=1)
-        for i, dec in enumerate(analysis.decisions, 1):
-            p = doc.add_paragraph(f"{i}. {dec.description.strip()}")
-            if dec.rationale:
-                doc.add_paragraph(f"السبب: {dec.rationale.strip()}", style='List Bullet')
+        _build_decisions_section(doc, analysis.decisions)
                 
     if analysis.next_meeting_date:
         doc.add_heading("الاجتماع القادم (Next Meeting)", level=1)
@@ -379,7 +387,7 @@ def save_docx_transcript_output(transcription: TranscriptionResult, analysis: Me
     if Document is None:
         return output_dir / "[docx_missing].txt"
 
-    docx_filename = json_filename.replace(".json", "_Full_Transcript.docx")
+    docx_filename = json_filename.replace(JSON_EXT, "_Full_Transcript.docx")
     output_path = output_dir / docx_filename
 
     doc = Document()

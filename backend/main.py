@@ -18,9 +18,10 @@ import logging
 import sys
 import os
 import uuid
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Annotated
 
 # Add the parent directory to path so we can import core modules
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -30,10 +31,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 
 from config.settings import Settings
-from core.models import MeetingAnalysis, TranscriptionResult
-from core.transcriber import WhisperTranscriber
-from core.analyzer import MeetingAnalyzer
-from core.email_sender import EmailSender
+from core.transcriber import WhisperTranscriber, TranscriptionResult
+from core.analyzer import MeetingAnalyzer, MeetingAnalysis
+from core.email_sender import EmailSender, RecipientResult, EmailDeliveryResult
+
+# ── Reusable Annotated Types (FastAPI 0.95+ Dependency Injection) ─────────────
+AudioFile = Annotated[UploadFile, File(...)]  # Required
+Participants = Annotated[str, Form()]         # Default in signature
+MeetingTitle = Annotated[Optional[str], Form()] # Default in signature
+ProcessingMode = Annotated[str, Form()]       # Default in signature
 
 try:
     from docx import Document
@@ -318,7 +324,7 @@ async def root():
     return {"message": "Meeting Assistant API v2.0", "status": "running"}
 
 @app.post("/api/save-audio")
-async def save_audio(audio: UploadFile = File(...)):
+async def save_audio(audio: AudioFile):
     """
     Saves an audio file directly to the uploads directory.
     Used for automatically archiving recordings immediately after they are stopped.
@@ -327,9 +333,13 @@ async def save_audio(audio: UploadFile = File(...)):
     upload_dir.mkdir(parents=True, exist_ok=True)
     
     file_path = upload_dir / audio.filename
-    content = await audio.read()
-    with open(file_path, "wb") as f:
-        f.write(content)
+    
+    # Save uploaded file using streaming to prevent OOM (Reliability Fix)
+    try:
+        with open(file_path, "wb") as f:
+            shutil.copyfileobj(audio.file, f)
+    finally:
+        await audio.close()
         
     return {"message": "تم حفظ التسجيل بنجاح", "path": str(file_path)}
 
@@ -359,10 +369,10 @@ async def delete_audio(filename: str):
 @app.post("/api/process")
 async def process_meeting(
     background_tasks: BackgroundTasks,
-    audio: UploadFile = File(...),
-    participants: str = Form(""),        # comma-separated emails
-    meeting_title: Optional[str] = Form(None),
-    mode: str = Form("groq"),            # "local" or "groq"
+    audio: AudioFile,
+    participants: Participants = "",        # comma-separated emails
+    meeting_title: MeetingTitle = None,
+    mode: ProcessingMode = "groq",
 ):
     """
     Upload an audio file and start the processing pipeline.
@@ -381,13 +391,15 @@ async def process_meeting(
     if mode not in ("local", "groq"):
         raise HTTPException(status_code=400, detail="وضع المعالجة يجب أن يكون 'local' أو 'groq'")
 
-    # Save uploaded file
+    # Save uploaded file using streaming to prevent OOM on large audio files (Reliability Fix)
     job_id = str(uuid.uuid4())
     audio_path = UPLOAD_DIR / f"{job_id}{suffix}"
 
-    content = await audio.read()
-    with open(audio_path, "wb") as f:
-        f.write(content)
+    try:
+        with open(audio_path, "wb") as f:
+            shutil.copyfileobj(audio.file, f)
+    finally:
+        await audio.close()
 
     # Clean up the auto-saved duplicate to prevent having two identical copies
     auto_saved_path = UPLOAD_DIR / audio.filename

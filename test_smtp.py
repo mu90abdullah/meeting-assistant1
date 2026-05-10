@@ -1,9 +1,13 @@
 import smtplib
 
+import os
+from config.settings import Settings
+
 try:
-    server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10)
+    settings = Settings.load()
+    server = smtplib.SMTP_SSL(settings.smtp_server, settings.smtp_port, timeout=15)
     server.set_debuglevel(1)
-    server.login("mustafakamil190@gmail.com", "xtakxenkjomxegit")
+    server.login(settings.smtp_user, settings.smtp_password)
     print("\n[+] SUCCESS: Local SMTP login worked!")
     server.quit()
 except Exception as e:
