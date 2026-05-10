@@ -7,7 +7,7 @@ flowing through the Meeting Assistant pipeline.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -23,7 +23,7 @@ class TranscriptionResult(BaseModel):
     language: str = Field(default="en", description="Detected language code (e.g. 'en', 'ar')")
     duration_seconds: Optional[float] = Field(None, description="Audio duration in seconds")
     audio_file: str = Field(..., description="Path to the source audio file")
-    transcribed_at: datetime = Field(default_factory=datetime.utcnow)
+    transcribed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ class MeetingAnalysis(BaseModel):
     next_meeting_date: Optional[str] = Field(
         None, description="Next meeting date/time if mentioned"
     )
-    analyzed_at: datetime = Field(default_factory=datetime.utcnow)
+    analyzed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ class EmailDeliveryResult(BaseModel):
     """Aggregate result of the email delivery step."""
     recipients: List[RecipientResult]
     subject: str
-    sent_at: datetime = Field(default_factory=datetime.utcnow)
+    sent_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def total_sent(self) -> int:

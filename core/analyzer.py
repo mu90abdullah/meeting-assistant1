@@ -204,7 +204,7 @@ class MeetingAnalyzer:
 
         kwargs: dict = dict(
             model=self._model,
-            temperature=0.2,
+            temperature=0.0,
             messages=[
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user",   "content": user_message},

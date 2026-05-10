@@ -152,6 +152,7 @@ class WhisperTranscriber:
                 "model": "whisper-large-v3" if self._mode == "groq" else "whisper-1",
                 "file": f,
                 "response_format": "verbose_json",
+                "temperature": 0.0,
             }
             if self._settings.whisper_language:
                 kwargs["language"] = self._settings.whisper_language
@@ -222,6 +223,7 @@ class WhisperTranscriber:
             "vad_filter": True,
             "language": "ar",
             "beam_size": 3,
+            "temperature": 0.0,
         }
             
         segments_gen, info = self._local_model.transcribe(str(audio_path), **kwargs)

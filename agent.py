@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from __future__ import annotations
 """
 agent.py
 --------
@@ -28,13 +27,14 @@ Usage examples:
   # Load transcript from text file (skip transcription)
   python agent.py --transcript-file transcript.txt --title "Q2 Planning"
 """
+from __future__ import annotations
 
 import argparse
 import io
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 try:
@@ -221,8 +221,9 @@ def step_send_email(
     participants: list[str],
     settings: Settings,
     dry_run: bool,
-    attachments: list[Path] = None,
+    attachments: list[Path] | None = None,
 ) -> None:
+    attachments = attachments or []
     """Step 3 — Send email to participants."""
     if not participants:
         console.print("[yellow]⚠ No participants specified — skipping email step.[/yellow]")
@@ -252,7 +253,7 @@ def step_send_email(
 
 def save_json_output(result: PipelineResult, output_dir: Path) -> Path:
     """Save the full pipeline result as a timestamped JSON file."""
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     safe_title = "".join(
         c if c.isalnum() or c in "-_ " else "_"
         for c in result.analysis.meeting_title
@@ -351,9 +352,7 @@ def save_docx_summary_output(analysis: MeetingAnalysis, output_dir: Path, json_f
         hdr_cells[4].text = "الأولوية (Priority)"
         
         for i, item in enumerate(analysis.action_items, 1):
-            row_cells = doc.add_table(rows=1, cols=5).rows[0].cells if i == 1 else table.add_row().cells # workaround
-            if i == 1: 
-                row_cells = table.add_row().cells # actually just add a row
+            row_cells = table.add_row().cells
             row_cells[0].text = str(i)
             row_cells[1].text = item.task.replace("\n", " ")
             row_cells[2].text = item.assignee or "—"
@@ -397,6 +396,8 @@ def save_docx_transcript_output(transcription: TranscriptionResult, analysis: Me
 
     doc.save(str(output_path))
     return output_path
+
+
 def print_summary(analysis: MeetingAnalysis) -> None:
     """Pretty-print the analysis summary to the console."""
     console.print()
@@ -527,7 +528,7 @@ def main() -> int:
     # ── Step 3: Email ─────────────────────────────────────────────────────────
     if not args.no_email:
         try:
-            step_send_email(analysis, args.participants, settings, dry_run=args.dry_run)
+            step_send_email(analysis, args.participants, settings, dry_run=args.dry_run, attachments=attachments)
         except Exception as exc:
             logger.exception("Email failed")
             console.print(f"[red bold]✗ Email failed:[/red bold] {exc}")

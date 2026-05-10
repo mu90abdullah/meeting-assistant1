@@ -187,22 +187,22 @@
 <body>
 <div class="wrapper" dir="rtl" style="direction:rtl;text-align:right;">
 
-  <!-- Header -->
+
   <div class="header" dir="rtl" style="direction:rtl;text-align:right;">
     <h1 style="direction:rtl;text-align:right;">{{ analysis.meeting_title }}</h1>
     <div class="date" style="direction:rtl;text-align:right;">{{ generated_at }}</div>
   </div>
 
-  <!-- Body -->
+
   <div class="body" dir="rtl" style="direction:rtl;text-align:right;">
 
-    <!-- Summary -->
+
     <div class="section" style="direction:rtl;text-align:right;">
       <div class="section-label" style="direction:rtl;text-align:right;">الملخص</div>
       <p class="summary-text" dir="rtl" style="direction:rtl;text-align:right;">{{ analysis.summary }}</p>
     </div>
 
-    <!-- Key Topics -->
+
     {% if analysis.key_topics %}
     <hr class="divider"/>
     <div class="section" style="direction:rtl;text-align:right;">
@@ -215,7 +215,7 @@
     </div>
     {% endif %}
 
-    <!-- Action Items -->
+
     {% if analysis.action_items %}
     <hr class="divider"/>
     <div class="section" style="direction:rtl;text-align:right;">
@@ -240,7 +240,7 @@
     </div>
     {% endif %}
 
-    <!-- Decisions -->
+
     {% if analysis.decisions %}
     <hr class="divider"/>
     <div class="section" style="direction:rtl;text-align:right;">
@@ -256,7 +256,7 @@
     </div>
     {% endif %}
 
-    <!-- Next Meeting -->
+
     {% if analysis.next_meeting_date %}
     <hr class="divider"/>
     <div class="next-meeting" dir="rtl" style="direction:rtl;text-align:right;background:#111;border-radius:8px;padding:18px 22px;color:#fff;">
@@ -265,10 +265,10 @@
     </div>
     {% endif %}
 
-  </div><!-- /body -->
+  </div>
 
 
 
-</div><!-- /wrapper -->
+</div>
 </body>
 </html>

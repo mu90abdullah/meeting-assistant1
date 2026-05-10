@@ -18,14 +18,14 @@ import logging
 import sys
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 # Add the parent directory to path so we can import core modules
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 
@@ -66,6 +66,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Additional OWASP recommended headers
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https://fastapi.tiangolo.com;"
+    )
+    # Hide server details
+    if "x-powered-by" in response.headers:
+        del response.headers["x-powered-by"]
+    response.headers["server"] = "Protected"
+    return response
 
 # ── In-memory job store ────────────────────────────────────────────────────────
 # Structure: { job_id: { status, progress, stage, result, error } }
@@ -209,7 +229,7 @@ def run_pipeline(
         logger.info("[%s] Analysis done.", job_id)
 
         # ── Step 3: Build output documents (in-memory, no disk I/O) ───────────
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         base_name = f"{timestamp}_{job_id[:8]}"
 
         attachments = []
@@ -387,7 +407,7 @@ async def process_meeting(
         "stage": "في قائمة الانتظار...",
         "result": None,
         "error": None,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
         "filename": audio.filename,
     }
