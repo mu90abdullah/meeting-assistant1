@@ -12,6 +12,7 @@ Endpoints:
 from __future__ import annotations
 
 import asyncio
+import io
 import json
 import logging
 import sys
@@ -37,16 +38,19 @@ from core.email_sender import EmailSender
 try:
     from docx import Document
     from docx.shared import Pt
+    _DOCX_AVAILABLE = True
 except ImportError:
     Document = None
-
-try:
-    import io
-except ImportError:
-    io = None
+    _DOCX_AVAILABLE = False
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Log python-docx availability at startup for debugging
+if _DOCX_AVAILABLE:
+    logger.info("[STARTUP] python-docx is available — DOCX attachments ENABLED")
+else:
+    logger.warning("[STARTUP] python-docx NOT FOUND — DOCX attachments DISABLED. Add 'python-docx' to requirements.txt")
 
 # ── App setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(
