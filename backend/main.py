@@ -19,6 +19,7 @@ import sys
 import os
 import uuid
 import shutil
+import aiofiles
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Annotated
@@ -343,10 +344,11 @@ async def save_audio(audio: AudioFile):
     
     file_path = upload_dir / audio.filename
     
-    # Save uploaded file using streaming to prevent OOM (Reliability Fix)
+    # Save uploaded file using async streaming to prevent event loop blocking (Reliability Fix)
     try:
-        with open(file_path, "wb") as f:
-            shutil.copyfileobj(audio.file, f)
+        async with aiofiles.open(file_path, "wb") as out_file:
+            while content := await audio.read(1024 * 1024):  # 1MB chunks
+                await out_file.write(content)
     finally:
         await audio.close()
         
@@ -400,13 +402,14 @@ async def process_meeting(
     if mode not in ("local", "groq"):
         raise HTTPException(status_code=400, detail="وضع المعالجة يجب أن يكون 'local' أو 'groq'")
 
-    # Save uploaded file using streaming to prevent OOM on large audio files (Reliability Fix)
+    # Save uploaded file using async streaming to prevent event loop blocking (Reliability Fix)
     job_id = str(uuid.uuid4())
     audio_path = UPLOAD_DIR / f"{job_id}{suffix}"
 
     try:
-        with open(audio_path, "wb") as f:
-            shutil.copyfileobj(audio.file, f)
+        async with aiofiles.open(audio_path, "wb") as out_file:
+            while content := await audio.read(1024 * 1024):  # 1MB chunks
+                await out_file.write(content)
     finally:
         await audio.close()
 

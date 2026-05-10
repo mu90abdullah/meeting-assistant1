@@ -197,6 +197,16 @@ export default function Home() {
                     {/* Right: File Upload */}
                     <div
                       onClick={() => !file && setInputType('upload')}
+                      onKeyDown={(e) => {
+                        if (!file && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          setInputType('upload');
+                        }
+                      }}
+                      role="button"
+                      tabIndex={file ? -1 : 0}
+                      aria-label="اختيار رفع ملف صوتي"
+                      aria-pressed={inputType === 'upload'}
                       style={{
                         flex: 1, padding: '40px', cursor: file ? 'not-allowed' : 'pointer',
                         textAlign: 'center', transition: 'all 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -229,6 +239,16 @@ export default function Home() {
                     {/* Left: Live Record */}
                     <div
                       onClick={() => !file && setInputType('record')}
+                      onKeyDown={(e) => {
+                        if (!file && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          setInputType('record');
+                        }
+                      }}
+                      role="button"
+                      tabIndex={file ? -1 : 0}
+                      aria-label="اختيار تسجيل مباشر"
+                      aria-pressed={inputType === 'record'}
                       style={{
                         flex: 1, padding: '40px', cursor: file ? 'not-allowed' : 'pointer',
                         textAlign: 'center', transition: 'all 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -304,8 +324,9 @@ export default function Home() {
                 <div className="card">
                   <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div>
-                      <label className="form-label">عنوان الاجتماع (اختياري)</label>
+                      <label htmlFor="meeting-title-input" className="form-label">عنوان الاجتماع (اختياري)</label>
                       <input
+                        id="meeting-title-input"
                         type="text" value={meetingTitle}
                         onChange={e => setMeetingTitle(e.target.value)}
                         disabled={isProcessing} className="form-input"

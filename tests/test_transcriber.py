@@ -79,7 +79,8 @@ class TestWhisperTranscriber:
         assert isinstance(result, TranscriptionResult)
         assert result.text == "Hello, this is a test transcript."
         assert result.language == "en"
-        assert result.duration_seconds == 120.0
+        import math
+        assert math.isclose(result.duration_seconds, 120.0, rel_tol=1e-9)
 
     def test_result_contains_audio_path(self, mock_settings, sample_audio_file):
         """TranscriptionResult should include the full audio file path."""

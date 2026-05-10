@@ -136,7 +136,7 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
         {activeTab === 'summary' && (
           <div className="card">
             <h3 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8' }}>
-              <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
+              <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />{' '}
               الملخص التنفيذي
             </h3>
             <p className="text-body" style={{ padding: '24px', background: 'var(--white)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', marginTop: '16px' }}>
@@ -145,7 +145,7 @@ export default function ResultsViewer({ result }: ResultsViewerProps) {
             {result.participants_mentioned.length > 0 && (
               <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--charcoal-trans)' }}>
                 <h4 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#e8e8e8', marginBottom: '16px' }}>
-                  <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />
+                  <span style={{ width: '4px', height: '14px', background: 'var(--coral)', borderRadius: '2px', display: 'inline-block' }} />{' '}
                   المشاركون المذكورون
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>

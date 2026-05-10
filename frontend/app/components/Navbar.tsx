@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 const navLinks = [
-  { label: 'الرئيسية', href: '#' },
+  { label: 'الرئيسية', href: '/' },
   { label: 'كيف يعمل', href: '#how-it-works' },
   { label: 'تواصل معنا', href: '#contact' },
 ];
@@ -18,7 +18,7 @@ export default function Navbar() {
         <div className="navbar-inner">
 
           {/* Brand — Logo + Name */}
-          <a href="#" className="navbar-brand">
+          <a href="/" className="navbar-brand">
 
             <span className="navbar-brand-name" style={{ fontStyle: 'italic', direction: 'ltr', display: 'flex', alignItems: 'baseline' }}>
               <span style={{ fontWeight: 800, letterSpacing: '-1px' }}>

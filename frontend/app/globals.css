@@ -745,7 +745,7 @@ select.form-input:focus {
 
 strong {
   z-index: 2;
-  font-family: "Avalors Personal Use";
+  font-family: "Avalors Personal Use", sans-serif;
   font-size: 12px;
   letter-spacing: 5px;
   color: #ffffff;

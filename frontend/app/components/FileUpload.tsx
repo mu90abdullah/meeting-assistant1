@@ -49,7 +49,7 @@ export default function FileUpload({ onFile, file, disabled }: FileUploadProps) 
 
   return (
     <div>
-      <label className="form-label">الملف الصوتي</label>
+      <label htmlFor="audio-file-upload" className="form-label">الملف الصوتي</label>
       <div
         onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
@@ -72,6 +72,7 @@ export default function FileUpload({ onFile, file, disabled }: FileUploadProps) 
         }}
       >
         <input
+          id="audio-file-upload"
           type="file"
           accept={ALLOWED.join(',')}
           onChange={handleChange}

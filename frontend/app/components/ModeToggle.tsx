@@ -26,14 +26,27 @@ const MODES = [
 export default function ModeToggle({ mode, onChange, disabled }: ModeToggleProps) {
   return (
     <div>
-      <label className="form-label">وضع المعالجة</label>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+      <label id="mode-selection-label" className="form-label">وضع المعالجة</label>
+      <div 
+        role="radiogroup" 
+        aria-labelledby="mode-selection-label"
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+      >
         {MODES.map((m) => {
           const isActive = mode === m.id;
           return (
             <div
               key={m.id}
               onClick={() => !disabled && onChange(m.id)}
+              onKeyDown={(e) => {
+                if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  onChange(m.id);
+                }
+              }}
+              role="radio"
+              tabIndex={0}
+              aria-checked={isActive}
               style={{
                 padding: '18px',
                 borderRadius: '8px',

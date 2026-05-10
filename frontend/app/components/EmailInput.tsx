@@ -83,6 +83,15 @@ export default function EmailInput({ emails, onChange, disabled }: EmailInputPro
           boxShadow: isFocused ? '#e8e8e8 0px 0px 0px 2px' : 'var(--shadow-level-1)',
         }}
         onClick={() => (document.getElementById('email-input') as HTMLInputElement)?.focus()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            (document.getElementById('email-input') as HTMLInputElement)?.focus();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="إدخال البريد الإلكتروني للمستلمين"
       >
         {emails.map((email, i) => (
           <span

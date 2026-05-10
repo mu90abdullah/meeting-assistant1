@@ -2,6 +2,7 @@
 fastapi>=0.111.0          # Web framework
 uvicorn>=0.29.0           # ASGI server
 python-multipart>=0.0.9   # File upload support
+aiofiles>=23.0.0           # Async file I/O support
 
 # ── Core ──────────────────────────────────────────────────────────────────────
 openai>=1.30.0          # Whisper API + GPT-4o
