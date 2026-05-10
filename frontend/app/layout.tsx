@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "./components/Navbar";
-import MeshBackground from "./components/MeshBackground";
+import NetworkGrid from "./components/NetworkGrid";
 
 export const metadata: Metadata = {
   title: "مساعد الاجتماعات — AI Meeting Assistant",
@@ -29,6 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <NetworkGrid />
         <Navbar />
         {children}
       </body>
